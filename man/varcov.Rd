@@ -7,11 +7,15 @@
 varcov(model)
 }
 \arguments{
-\item{model}{a glsObject (output of \link[MMRM]{mmrm})}
+\item{model}{mmrmObject (output of \link{mmrm})}
 }
 \value{
 matrix, the variance-covoariance matrix
 }
 \description{
-Copied from \link[SPR]{VarCor_gls}
+Compute the variance-covariance matrix of an mmrmObject.
+Copy of \link[SPR:VarCov_gls]{SPR::VarCov_gls}
+}
+\seealso{
+\link[SPR:VarCov_gls]{SPR::VarCov_gls}
 }

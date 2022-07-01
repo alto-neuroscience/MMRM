@@ -7,15 +7,15 @@
 mmrm_emmeans(...)
 }
 \arguments{
-\item{...}{see /link[emmeans]{emmeans}}
+\item{...}{see \link[emmeans:emmeans]{emmeans::emmeans}}
 }
 \value{
-see \link[emmeans]{emmeans}
+see \link[emmeans:emmeans]{emmeans::emmeans}
 }
 \description{
-Alias for \link[emmeans]{emmeans} that provides support
+Alias for \link[emmeans:emmeans]{emmeans::emmeans} that provides support
 for using Kenward-Rogers degrees of freedom calculation.
-Please see \link[emmeans]{emmeans} for further documentation.
+Please see \link[emmeans:emmeans]{emmeans::emmeans} for further documentation.
 }
 \details{
 Support for Kenward-Rogers degrees of freedom calculation
@@ -23,7 +23,7 @@ provided with i) a custom emm_basis function that overwrites the
 emm_basis.glm provided by the emmeans package and
 ii) addition of support for glsObject in the pbkrtest package
 (currently in a development version
-\link[gkane26/pbkrtest@nlme]{https://github.com/gkane26/pbkrtest/tree/nlme}).
+\href{https://github.com/gkane26/pbkrtest/tree/nlme}{gkane26/pbkrtest@nlme}).
 
 \if{html}{\out{<div class="sourceCode">}}\preformatted{      Kenward-Rogers d.f. calculation is memory and computation time intensive.
       By default, running this method on a large dataset will throw an error to warn users.
@@ -32,10 +32,11 @@ ii) addition of support for glsObject in the pbkrtest package
 }\if{html}{\out{</div>}}
 }
 \examples{
-
+\dontrun{
 mmrm_emmeans(object = mmrm_object,
              specs = pairwise ~ time | treatment,
              mode = "kenward",
              pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"))
+}
 
 }

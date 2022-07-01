@@ -1,10 +1,14 @@
 #' Get Variance-Covariance matrix of MMRM model
 #'
-#' Copied from \link[SPR]{VarCor_gls}
+#' @description
+#' Compute the variance-covariance matrix of an mmrmObject.
+#' Copy of [SPR::VarCov_gls]
 #'
-#' @param model a glsObject (output of \link[MMRM]{mmrm})
+#' @param model mmrmObject (output of [mmrm])
 #'
 #' @returns matrix, the variance-covoariance matrix
+#'
+#' @seealso [SPR::VarCov_gls]
 #'
 #' @export
 varcov <- function (model) {
