@@ -2,10 +2,11 @@
 #'
 #' @description
 #' Fits a Mixed Model Repeated Measures model (see Details).
-#' The fixed effects structure is flexible -- user defined using a formula.
-#' The random effects structure is hard-coded:
-#' independent variance at each time point,
-#' but residuals of individual subjects are correlated across timepoints.
+#' In this implementation, the fixed effects structure is flexible --
+#' it is user defined using a formula. This implementation does not support
+#' the inculsion of random effects, and it specifies that the residual variance
+#' at each time point is independent and residuals of individual subjects
+#' are correlated across timepoints.
 #'
 #' @param formula formula for the fixed effects structure of the model
 #' @param time the time variable of the model
@@ -28,19 +29,38 @@
 #' @param ... additional arguments passed to \link[nlme]{gls}
 #'             (e.g., na.action)
 #'
-#' @details TODO
+#' @details
+#' The MMRM implemented here is defined as:
+#' \deqn{Y_i = X_i\beta + \epsilon_i}
+#' \deqn{\epsilon_i ~ \mathcal{N}(0, \Sigma_i)}
+#' * \eqn{Y_i} as the vector of outcomes with length
+#' \eqn{n_{subjects}*n_{timepoints}}
+#' * \eqn{X_i} as the a matrix of predictors with
+#' \eqn{n_{subjects}*n_{timepoints}} rows and \eqn{n_{predictors}} columns
+#' * \eqn{\beta} as the vector of coefficients with length \eqn{n_{predictors}}
+#' * \eqn{\epsilon_i} as the vector of residuals
+#' * \eqn{\Sigma_i} as the (\eqn{n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}}) covariance matrix
 #'
-#' @returns glsObject or list of glsObjects
-#'            if return_all = FALSE, returns only the glsObject
-#'              of the first model to converge or the last attempted model.
-#'            if return_all = TRUE, returns list of all attempted models
+#' This implementation of the MMRM supports three different
+#' covariance structures: unstructured, AR(1), and compound symmetry.
+#' Timepoints are always treated as categorical,
+#' with independent residual variance at each timepoint and correlated residuals
+#' among individual subjects across timepoints.
+#'
+#' @returns
+#' mmrmObject or list of mmrmObjects
+#'
+#' If return_all = FALSE, returns only the mmrmObject of the first model to
+#' converge or the last attempted model.\cr
+#' If return_all = TRUE, returns list of all attempted models.
 #'
 #' @examples
-#' \donttest{
-#' mmrm(outcome ~ baseline + group + time + baseline:time + group:time,
+#' \dontrun{
+#' mmrm(outcome ~ baseline + group + time +
+#'          baseline:time + group:time,
 #'      time = "time",
 #'      subjects = "subjectid",
-#'      data = data)
+#'      data = my_data)
 #'}
 #'
 #' @export
@@ -58,7 +78,32 @@ mmrm <- function(formula,
                  return_all = FALSE,
                  ...) {
 
-  # check that time variable is a factor
+  # check arguments
+  if(missing(formula) ||
+     missing(time) ||
+     missing(subjects) ||
+     missing(data)) stop("missing argument! ",
+                         "The following arguments must be specified: ",
+                         "formula, time, subjects, data")
+  if (class(formula) == "character") formula = as.formula(formula)
+  if (class(formula) != "formula") stop("formula argument must be a formula ",
+                                        "or a string that represents a formula")
+  if (class(time) != "character" || class(subjects) != "character")
+    stop("the time and subjects arguments must be strings -- ",
+         "the column names of the time and subjects variables ",
+         "in the data structure")
+  if (!(time %in% names(data)))
+    stop("the time variable (", time, ") ",
+         "was not found in data")
+  if (!(subjects %in% names(data)))
+    stop("the subjects variable (", subjects, ") ",
+         "was not found in data")
+  if (!inherits(data, "data.frame"))
+    stop("data is not a valid data structure ",
+         "(e.g., a data.frame, data.table, or tibble)")
+
+
+  # ensure that time variable is a factor
   if (class(data$time) != "factor") {
     data$time = factor(data$time)
     warning("time variable is not a factor, coercing it to factor")
@@ -73,62 +118,74 @@ mmrm <- function(formula,
 
     # It looks like information regarding model fit/convergence
     # is not returned with the glsObject.
-    # Thus, the only way I can think of to evaluate convergence
-    # is to catch warnings and errors when model is fit
+    # To evaluate convergence, catch warnings/errors during model fit
     res <- tryCatch(
-      eval(
-        bquote(
-          nlme::gls(
-            .(formula),
-            correlation = nlme::corSymm(form = .(correlation_formula)),
-            weights = nlme::varIdent(form = .(weights_formula)),
-            data = data,
-            ...
+      withCallingHandlers(
+        {
+          eval(
+            bquote(
+              nlme::gls(
+                .(formula),
+                correlation = nlme::corSymm(form = .(correlation_formula)),
+                weights = nlme::varIdent(form = .(weights_formula)),
+                data = data,
+                ...
+              )
+            )
           )
-        )
+        },
+        warning = function(w) {
+          wenv <<- new.env(parent=parent.env(environment()))
+          wenv$warning_log = w
+        }
       ),
-        error = function(e) e,
-        warning = function(w) w
+      error = function(e) e
     )
-    res$data = data
-    class(res) = c("mmrm", class(res))
-
-    res_list[[names(cov_list)[i]]] <- res
-
     if (inherits(res, "error")) {
       warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
-    } else if (inherits(res, "warning")) {
-      warning("Warning fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
-    } else if (stop_on_convergence) {
-      break
-    }
-      }
-
-    if (return_all) {
-      res_list
     } else {
-      res
+      res$data = data
+      if (exists("wenv", mode="environment")) {
+        if (exists("warning_log", envir=wenv))
+          res$warnings = warning_log
+        rm(wenv, envir=.GlobalEnv)
+      }
+      if (!("warnings" %in% names(res)))
+        res$warnings = NA
+      class(res) = c("mmrm", class(res))
+
+      res_list[[names(cov_list)[i]]] <- res
+
+      if (is.na(res$warnings) && stop_on_convergence) break
     }
+
   }
 
-  .get_cov_list <- function(covariance = c(
-    "unstructured",
-    "autoregressive",
-    "compound-symmetry"
-  )) {
-    cor_list <- list()
-    for (c in covariance) {
-      ctype <- match.arg(tolower(c), covariance)
-      cor_list[[c]] <- .cov_map(ctype)
-    }
+  if (return_all) {
+    res_list
+  } else {
+    res
+  }
+}
 
-    return(cor_list)
+.get_cov_list <- function(covariance = c(
+  "unstructured",
+  "autoregressive",
+  "compound-symmetry"
+)) {
+  cor_list <- list()
+  for (c in covariance) {
+    ctype <- match.arg(tolower(c), covariance)
+    cor_list[[c]] <- .cov_map(ctype)
   }
 
-  .cov_map <- function(cov_type) {
-    switch(cov_type,
-           "unstructured" = nlme::corSymm,
-           "autoregressive" = nlme::corAR1,
-           "compound-symmetry" = nlme::corCompSymm,
-    )
-  }
+  return(cor_list)
+}
+
+.cov_map <- function(cov_type) {
+  switch(cov_type,
+         "unstructured" = nlme::corSymm,
+         "autoregressive" = nlme::corAR1,
+         "compound-symmetry" = nlme::corCompSymm,
+  )
+}

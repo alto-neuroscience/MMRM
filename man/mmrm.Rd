@@ -46,27 +46,47 @@ or last model attempted (if all failed).}
 (e.g., na.action)}
 }
 \value{
-glsObject or list of glsObjects
-           if return_all = FALSE, returns only the glsObject
-             of the first model to converge or the last attempted model.
-           if return_all = TRUE, returns list of all attempted models
+mmrmObject or list of mmrmObjects
+
+If return_all = FALSE, returns only the mmrmObject of the first model to
+converge or the last attempted model.\cr
+If return_all = TRUE, returns list of all attempted models.
 }
 \description{
 Fits a Mixed Model Repeated Measures model (see Details).
-The fixed effects structure is flexible -- user defined using a formula.
-The random effects structure is hard-coded:
-independent variance at each time point,
-but residuals of individual subjects are correlated across timepoints.
+In this implementation, the fixed effects structure is flexible --
+it is user defined using a formula. This implementation does not support
+the inculsion of random effects, and it specifies that the residual variance
+at each time point is independent and residuals of individual subjects
+are correlated across timepoints.
 }
 \details{
-TODO
+The MMRM implemented here is defined as:
+\deqn{Y_i = X_i\beta + \epsilon_i}
+\deqn{\epsilon_i ~ \mathcal{N}(0, \Sigma_i)}
+\itemize{
+\item \eqn{Y_i} as the vector of outcomes with length
+\eqn{n_{subjects}*n_{timepoints}}
+\item \eqn{X_i} as the a matrix of predictors with
+\eqn{n_{subjects}*n_{timepoints}} rows and \eqn{n_{predictors}} columns
+\item \eqn{\beta} as the vector of coefficients with length \eqn{n_{predictors}}
+\item \eqn{\epsilon_i} as the vector of residuals
+\item \eqn{\Sigma_i} as the (\eqn{n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}}) covariance matrix
+}
+
+This implementation of the MMRM supports three different
+covariance structures: unstructured, AR(1), and compound symmetry.
+Timepoints are always treated as categorical,
+with independent residual variance at each timepoint and correlated residuals
+among individual subjects across timepoints.
 }
 \examples{
-\donttest{
-mmrm(outcome ~ baseline + group + time + baseline:time + group:time,
+\dontrun{
+mmrm(outcome ~ baseline + group + time +
+         baseline:time + group:time,
      time = "time",
      subjects = "subjectid",
-     data = data)
+     data = my_data)
 }
 
 }
