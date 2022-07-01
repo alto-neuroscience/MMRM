@@ -63,7 +63,7 @@
   )
 }
 
-emm_basis.mmrm <- function(object, trms, xlev, grid, mode,
+emm_basis.mmrm <- function(object, trms, xlev, grid, mode="kenward",
                            extra.iter = 0, options, misc, ...) {
   if (grepl("kenward", tolower(mode)) | tolower(mode) == "KR") {
     mode <- "kenward-rogers"

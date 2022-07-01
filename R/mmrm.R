@@ -104,8 +104,8 @@ mmrm <- function(formula,
 
 
   # ensure that time variable is a factor
-  if (class(data$time) != "factor") {
-    data$time = factor(data$time)
+  if (class(data[[time]]) != "factor") {
+    data[[time]] = factor(data[[time]])
     warning("time variable is not a factor, coercing it to factor")
   }
 
@@ -161,7 +161,9 @@ mmrm <- function(formula,
 
   }
 
-  if (return_all) {
+  if (inherits(res, "error")) {
+    stop(res)
+  } else if (return_all) {
     res_list
   } else {
     res
