@@ -1,0 +1,26 @@
+Package: MMRM
+Type: Package
+Title: Mixed Model Repeated Measures Modelling 
+Version: 0.0.0.0
+Authors@R: person("Gary", "Kane", email = "gkane@altoneuroscience.com",
+  role = c("aut", "cre"))
+URL: https://github.com/alto-neuroscience/MMRM
+BugReports: https://github.com/alto-neuroscience/MMRM/issues
+Description: Fit and evaluate MMRM models.
+    This package is meant to be an R implementation of models commonly used to 
+    evaluate clinical trial results.
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    emmeans,
+    estimability,
+    nlme,
+    pbkrtest (>= 0.5.1.9001)
+Remotes:
+    gkane26/pbkrtest@nlme
+RoxygenNote: 7.2.0
+Suggests: 
+    lme4,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
