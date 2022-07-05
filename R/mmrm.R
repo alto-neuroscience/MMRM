@@ -17,17 +17,25 @@
 #'                       and check for convergence. If there are convergence
 #'                       issues, it will iterate through the rest of the list
 #'                       until the model converges.
-#' @param control a glsControl object, see \link[nlme]{glsControl}
-#' @param stop_on_convergence if TRUE, stop fitting models and
-# "                              return results once one model converges.
-#'                              if FALSE, fits models with all specified
-#'                              covariance structures regardless of
-#'                              convergence of earlier model
+#' @param method character, either "REML" or "ML". If "REML" the model is fit
+#'                   by maximizing the restricted log-likelihood. If "ML" the
+#'                   log-likelihood is maximized. Defaults to "REML".
+#' @param na.action a functoin that indicates what should happen when the
+#'                      data contain NAs. Defaults to na.omit
+#' @param control a list of control values fo the estimation algorithm to
+#'                    to replace the default values returned by the function
+#'                    [nlme::glsControl]
+#' @param verbose logical value indicating whether to print the
+#'                    evolution of the iterative algorithm. Default is FALSE
 #' @param return_all logical; if TRUE, will return all models that were fit,
 #'                    if FALSE, only returns the first model that converged
 #'                    or last model attempted (if all failed).
-#' @param ... additional arguments passed to \link[nlme]{gls}
-#'             (e.g., na.action)
+#' @param stop_on_convergence ignored if return_all = FALSE.
+#'                                if return_all = TRUE, stop fitting models and
+#'                              return results once one model converges if
+#'                              stop_on_convergence = TRUE. if return_all = TRUE
+#'                              and stop_on_convergence = FALSE, fits and
+#'                              returns all specified models
 #'
 #' @details
 #' The MMRM implemented here is defined as:
@@ -56,12 +64,14 @@
 #'
 #' @examples
 #' \dontrun{
-#' mmrm(outcome ~ baseline + group + time +
-#'          baseline:time + group:time,
-#'      time = "time",
-#'      subjects = "subjectid",
-#'      data = my_data)
-#'}
+#' mmrm(
+#'   outcome ~ baseline + group + time +
+#'     baseline:time + group:time,
+#'   time = "time",
+#'   subjects = "subjectid",
+#'   data = my_data
+#' )
+#' }
 #'
 #' @export
 mmrm <- function(formula,
@@ -73,45 +83,74 @@ mmrm <- function(formula,
                    "autoregressive",
                    "compound-symmetry"
                  ),
-                 control = nlme::glsControl(),
-                 stop_on_convergence = TRUE,
+                 method = "REML",
+                 na.action = na.exclude,
+                 control = list(),
+                 verbose = FALSE,
                  return_all = FALSE,
-                 ...) {
+                 stop_on_convergence = TRUE) {
 
   # check arguments
-  if(missing(formula) ||
-     missing(time) ||
-     missing(subjects) ||
-     missing(data)) stop("missing argument! ",
-                         "The following arguments must be specified: ",
-                         "formula, time, subjects, data")
-  if (class(formula) == "character") formula = as.formula(formula)
-  if (class(formula) != "formula") stop("formula argument must be a formula ",
-                                        "or a string that represents a formula")
-  if (class(time) != "character" || class(subjects) != "character")
-    stop("the time and subjects arguments must be strings -- ",
-         "the column names of the time and subjects variables ",
-         "in the data structure")
-  if (!(time %in% names(data)))
-    stop("the time variable (", time, ") ",
-         "was not found in data")
-  if (!(subjects %in% names(data)))
-    stop("the subjects variable (", subjects, ") ",
-         "was not found in data")
-  if (!inherits(data, "data.frame"))
-    stop("data is not a valid data structure ",
-         "(e.g., a data.frame, data.table, or tibble)")
+  if (missing(formula) ||
+    missing(time) ||
+    missing(subjects) ||
+    missing(data)) {
+    stop(
+      "missing argument! ",
+      "The following arguments must be specified: ",
+      "formula, time, subjects, data"
+    )
+  }
+  if (class(formula) == "character") formula <- as.formula(formula)
+  if (class(formula) != "formula") {
+    stop(
+      "formula argument must be a formula ",
+      "or a string that represents a formula"
+    )
+  }
+  if (class(time) != "character" || class(subjects) != "character") {
+    stop(
+      "the time and subjects arguments must be strings -- ",
+      "the column names of the time and subjects variables ",
+      "in the data structure"
+    )
+  }
+  if (!(time %in% names(data))) {
+    stop(
+      "the time variable (", time, ") ",
+      "was not found in data"
+    )
+  }
+  if (!(subjects %in% names(data))) {
+    stop(
+      "the subjects variable (", subjects, ") ",
+      "was not found in data"
+    )
+  }
+  if (!inherits(data, "data.frame")) {
+    stop(
+      "data is not a valid data structure ",
+      "(e.g., a data.frame, data.table, or tibble)"
+    )
+  }
+  if (!return_all && !stop_on_convergence) {
+    stop_on_convergence <- TRUE
+    warning(
+      "return_all is FALSE, so setting stop_on_convergence = TRUE ",
+      "to return the first model that converges."
+    )
+  }
 
 
   # ensure that time variable is a factor
   if (class(data[[time]]) != "factor") {
-    data[[time]] = factor(data[[time]])
+    data[[time]] <- factor(data[[time]])
     warning("time variable is not a factor, coercing it to factor")
   }
 
   cov_list <- .get_cov_list(cov_struct)
-  correlation_formula = stats::as.formula(paste0("~ as.numeric(", time, ") | ", subjects))
-  weights_formula = stats::as.formula(paste0("~ 1 | ", time))
+  correlation_formula <- stats::as.formula(paste0("~ as.numeric(", time, ") | ", subjects))
+  weights_formula <- stats::as.formula(paste0("~ 1 | ", time))
 
   res_list <- list()
   for (i in 1:length(cov_list)) {
@@ -126,17 +165,20 @@ mmrm <- function(formula,
             bquote(
               nlme::gls(
                 .(formula),
-                correlation = nlme::corSymm(form = .(correlation_formula)),
-                weights = nlme::varIdent(form = .(weights_formula)),
                 data = data,
-                ...
+                correlation = .(cov_list[[i]])(form = .(correlation_formula)),
+                weights = nlme::varIdent(form = .(weights_formula)),
+                method = .(method),
+                na.action = na.action,
+                control = .(control),
+                verbose = .(verbose)
               )
             )
           )
         },
         warning = function(w) {
-          wenv <<- new.env(parent=parent.env(environment()))
-          wenv$warning_log = w
+          wenv <<- new.env(parent = parent.env(environment()))
+          wenv$warning_log <- w
         }
       ),
       error = function(e) e
@@ -144,21 +186,24 @@ mmrm <- function(formula,
     if (inherits(res, "error")) {
       warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
     } else {
-      res$data = data
-      if (exists("wenv", mode="environment")) {
-        if (exists("warning_log", envir=wenv))
-          res$warnings = warning_log
-        rm(wenv, envir=.GlobalEnv)
+      res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
+      res$data <- data
+      # res$na.action = na.action
+      if (exists("wenv", mode = "environment")) {
+        if (exists("warning_log", envir = wenv)) {
+          res$warnings <- warning_log
+        }
+        rm(wenv, envir = .GlobalEnv)
       }
-      if (!("warnings" %in% names(res)))
-        res$warnings = NA
-      class(res) = c("mmrm", class(res))
+      if (!("warnings" %in% names(res))) {
+        res$warnings <- NA
+      }
+      class(res) <- c("mmrm", class(res))
 
       res_list[[names(cov_list)[i]]] <- res
 
       if (is.na(res$warnings) && stop_on_convergence) break
     }
-
   }
 
   if (inherits(res, "error")) {
@@ -170,24 +215,33 @@ mmrm <- function(formula,
   }
 }
 
-.get_cov_list <- function(covariance = c(
+COV_TYPES <- c(
   "unstructured",
   "autoregressive",
   "compound-symmetry"
-)) {
-  cor_list <- list()
-  for (c in covariance) {
-    ctype <- match.arg(tolower(c), covariance)
-    cor_list[[c]] <- .cov_map(ctype)
+)
+.get_cov_list <- function(cov_struct = COV_TYPES) {
+  cov_list <- list()
+  for (c in cov_struct) {
+    ctype <- match.arg(tolower(c), COV_TYPES)
+    cov_list[[ctype]] <- .cov_map(ctype)
   }
 
-  return(cor_list)
+  return(cov_list)
 }
 
 .cov_map <- function(cov_type) {
   switch(cov_type,
-         "unstructured" = nlme::corSymm,
-         "autoregressive" = nlme::corAR1,
-         "compound-symmetry" = nlme::corCompSymm,
+    "unstructured" = nlme::corSymm,
+    "autoregressive" = nlme::corAR1,
+    "compound-symmetry" = nlme::corCompSymm,
+  )
+}
+
+.get_cov_call <- function(cov_struct) {
+  switch(cov_struct,
+    "unstructured" = quote(nlme::corSymm()),
+    "autoregressive" = quote(nlme::corAR1()),
+    "compound-symmetry" = quote(nlme::corCompSymm())
   )
 }

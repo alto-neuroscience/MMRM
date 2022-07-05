@@ -10,10 +10,12 @@ mmrm(
   subjects,
   data,
   cov_struct = c("unstructured", "autoregressive", "compound-symmetry"),
-  control = nlme::glsControl(),
-  stop_on_convergence = TRUE,
+  method = "REML",
+  na.action = na.exclude,
+  control = list(),
+  verbose = FALSE,
   return_all = FALSE,
-  ...
+  stop_on_convergence = TRUE
 )
 }
 \arguments{
@@ -31,19 +33,30 @@ and check for convergence. If there are convergence
 issues, it will iterate through the rest of the list
 until the model converges.}
 
-\item{control}{a glsControl object, see \link[nlme]{glsControl}}
+\item{method}{character, either "REML" or "ML". If "REML" the model is fit
+by maximizing the restricted log-likelihood. If "ML" the
+log-likelihood is maximized. Defaults to "REML".}
 
-\item{stop_on_convergence}{if TRUE, stop fitting models and
-if FALSE, fits models with all specified
-covariance structures regardless of
-convergence of earlier model}
+\item{na.action}{a functoin that indicates what should happen when the
+data contain NAs. Defaults to na.omit}
+
+\item{control}{a list of control values fo the estimation algorithm to
+to replace the default values returned by the function
+\link[nlme:glsControl]{nlme::glsControl}}
+
+\item{verbose}{logical value indicating whether to print the
+evolution of the iterative algorithm. Default is FALSE}
 
 \item{return_all}{logical; if TRUE, will return all models that were fit,
 if FALSE, only returns the first model that converged
 or last model attempted (if all failed).}
 
-\item{...}{additional arguments passed to \link[nlme]{gls}
-(e.g., na.action)}
+\item{stop_on_convergence}{ignored if return_all = FALSE.
+if return_all = TRUE, stop fitting models and
+return results once one model converges if
+stop_on_convergence = TRUE. if return_all = TRUE
+and stop_on_convergence = FALSE, fits and
+returns all specified models}
 }
 \value{
 mmrmObject or list of mmrmObjects
@@ -82,11 +95,13 @@ among individual subjects across timepoints.
 }
 \examples{
 \dontrun{
-mmrm(outcome ~ baseline + group + time +
-         baseline:time + group:time,
-     time = "time",
-     subjects = "subjectid",
-     data = my_data)
+mmrm(
+  outcome ~ baseline + group + time +
+    baseline:time + group:time,
+  time = "time",
+  subjects = "subjectid",
+  data = my_data
+)
 }
 
 }

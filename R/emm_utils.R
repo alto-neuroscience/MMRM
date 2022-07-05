@@ -63,34 +63,38 @@
   )
 }
 
-emm_basis.mmrm <- function(object, trms, xlev, grid, mode="kenward",
+emm_basis.mmrm <- function(object, trms, xlev, grid, mode = "kenward",
                            extra.iter = 0, options, misc, ...) {
   if (grepl("kenward", tolower(mode)) | tolower(mode) == "KR") {
     mode <- "kenward-rogers"
-    .emm_basis_mmrm_kr(object, trms, xlev, grid, mode,
-                       extra.iter = 0, options, misc, ...
+    .emm_basis_mmrm_kr(
+      object, trms, xlev, grid, mode,
+      extra.iter = 0, options, misc, ...
     )
   } else {
-    emmeans:::emm_basis.gls(object, trms, xlev, grid, mode,
-                            extra.iter = 0, options, misc, ...
+    emmeans:::emm_basis.gls(
+      object, trms, xlev, grid, mode,
+      extra.iter = 0, options, misc, ...
     )
   }
 }
 
-recover_data.mmrm <- function(object, data, ...)
-{
-  fcall = object$call
+recover_data.mmrm <- function(object, data, ...) {
+  fcall <- object$call
   if (!is.null(wts <- fcall$weights)) {
-    wts = nlme::varWeights(object$modelStruct)
-    fcall$weights = NULL
+    wts <- nlme::varWeights(object$modelStruct)
+    fcall$weights <- NULL
   }
-  trms = delete.response(terms(nlme::getCovariateFormula(object)))
-  result = emmeans:::recover_data.call(fcall, trms, object$na.action,
-                              data = object$data, ...)
-  if (!is.null(wts))
-    result[["(weights)"]] = wts
-  if (!missing(data))
-    attr(result, "misc") = list(data = data)
-  attr(result, "pass.it.on") = TRUE
+  trms <- delete.response(terms(nlme::getCovariateFormula(object)))
+  result <- emmeans:::recover_data.call(fcall, trms, object$na.action,
+    data = object$data, ...
+  )
+  if (!is.null(wts)) {
+    result[["(weights)"]] <- wts
+  }
+  if (!missing(data)) {
+    attr(result, "misc") <- list(data = data)
+  }
+  attr(result, "pass.it.on") <- TRUE
   result
 }

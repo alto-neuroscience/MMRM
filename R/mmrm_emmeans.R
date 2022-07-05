@@ -19,10 +19,12 @@
 #'
 #' @examples
 #' \dontrun{
-#' mmrm_emmeans(object = mmrm_object,
-#'              specs = pairwise ~ time | treatment,
-#'              mode = "kenward",
-#'              pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"))
+#' mmrm_emmeans(
+#'   object = mmrm_object,
+#'   specs = pairwise ~ time | treatment,
+#'   mode = "kenward",
+#'   pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit")
+#' )
 #' }
 #'
 #' @export
