@@ -4,10 +4,19 @@
 \alias{mmrm_emmeans}
 \title{Estimated Marignal Means of MMRM models}
 \usage{
-mmrm_emmeans(...)
-}
-\arguments{
-\item{...}{see \link[emmeans:emmeans]{emmeans::emmeans}}
+mmrm_emmeans(
+  object,
+  specs,
+  by = NULL,
+  fac.reduce = function(coefs) apply(coefs, 2, mean),
+  contr,
+  options = get_emm_option("emmeans"),
+  weights,
+  offset,
+  trend,
+  ...,
+  tran
+)
 }
 \value{
 see \link[emmeans:emmeans]{emmeans::emmeans}
@@ -19,17 +28,15 @@ Please see \link[emmeans:emmeans]{emmeans::emmeans} for further documentation.
 }
 \details{
 Support for Kenward-Rogers degrees of freedom calculation
-provided with i) a custom emm_basis function that overwrites the
-emm_basis.glm provided by the emmeans package and
+is made possible with i) a custom emm_basis function and
 ii) addition of support for glsObject in the pbkrtest package
 (currently in a development version
 \href{https://github.com/gkane26/pbkrtest/tree/nlme}{gkane26/pbkrtest@nlme}).
-
-\if{html}{\out{<div class="sourceCode">}}\preformatted{      Kenward-Rogers d.f. calculation is memory and computation time intensive.
-      By default, running this method on a large dataset will throw an error to warn users.
-      To bypass this error, please set the pbkrtest.limit argument to a number larger than
-      the number of observations in the model.
-}\if{html}{\out{</div>}}
+\cr\cr
+Kenward-Rogers d.f. calculation is memory and computation time intensive.
+By default, running this method on a large dataset will throw an error to warn users.
+To bypass this error, please set the pbkrtest.limit argument to a number larger than
+the number of observations in the model.
 }
 \examples{
 \dontrun{
