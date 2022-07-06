@@ -9,20 +9,11 @@ TODO: more testing and examples!
 
 ## Installation
 
-The easiest way to install the package from a private repo is to clone and install the package locally:
-```bash
-mkdir MMRM_tmp && cd MMRM_tmp
-git clone git@github.com:alto-neuroscience/MMRM.git
-R CMD BUILD MMRM
-R CMD INSTALL MMRM_*.tar.gz
+##### Note: This package requires a [fork of the `pbkrtest` package](https://github.com/gkane26/pbkrtest/tree/nlme)
 
-# delete temporary files created by MMRM installation
-cd ..
-rm -rf MMRM_tmp
-```
-[Typical installation from public repo]
 ``` r
 if(!requireNamespace("remotes")) install.packages("remotes")
+try(remotes::install_github("gkane26/pbkrtest@nlme"))
 remotes::install_github("alto-neuroscience/MMRM")
 ```
 
