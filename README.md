@@ -9,6 +9,18 @@ TODO: more testing and examples!
 
 ## Installation
 
+The easiest way to install the package from a private repo is to clone and install the package locally:
+```bash
+mkdir MMRM_tmp && cd MMRM_tmp
+git clone git@github.com:alto-neuroscience/MMRM.git
+R CMD BUILD MMRM
+R CMD INSTALL MMRM_*.tar.gz
+
+# delete temporary files created by MMRM installation
+cd ..
+rm -rf MMRM_tmp
+```
+[Typical installation from public repo]
 ``` r
 if(!requireNamespace("remotes")) install.packages("remotes")
 remotes::install_github("alto-neuroscience/MMRM")
