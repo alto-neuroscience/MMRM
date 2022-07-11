@@ -5,7 +5,7 @@ R package to fit Mixed Model for Repeated Measures as is commonly used
 to analyze clinical trial data. This package uses `nlme::gls` to fit the model,
 and provides support for Kenward-Rogers degrees of freedom calculation.
 
-TODO: more testing and examples!
+This package is currently in beta version -- more testing and examples to come!
 
 ## Installation
 
@@ -22,15 +22,19 @@ remotes::install_github("alto-neuroscience/MMRM")
 ``` r
 library(MMRM)
 
+
+# fit an MMRM
 my_mmrm = MMRM::mmrm(outcome ~ baseline + group + time + baseline:time + group:time,
                      time = "time",
                      subjects = "subjects",
                      data = my_data)
 
+# get estimated marginal means
 mmrm_emm = MMRM::mmrm_emmeans(my_mmrm,
                               pairwise ~ group | time,
                               mode = "kenward")
 
+# calculate effect size
 mmrm_eff = MMRM::mmrm_eff_size(my_mmrm, mmrm_emm)
 ```
 
