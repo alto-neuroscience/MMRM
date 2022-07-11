@@ -4,7 +4,8 @@ Title: Mixed Model Repeated Measures Modelling
 Version: 0.0.0.2
 Authors@R: person("Gary", "Kane", email = "gkane@altoneuroscience.com",
   role = c("aut", "cre"))
-URL: https://github.com/alto-neuroscience/MMRM
+URL: https://github.com/alto-neuroscience/MMRM,
+    https://alto-neuroscience.github.io/MMRM/
 BugReports: https://github.com/alto-neuroscience/MMRM/issues
 Description: Fit and evaluate MMRM models.
     This package is meant to be an R implementation of models commonly used to 
