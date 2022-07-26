@@ -7,7 +7,8 @@
 mmrm_eff_size(mmrm_model, mmrm_emm, ...)
 }
 \arguments{
-\item{mmrm_model}{the mmrm model used to calculate effect size}
+\item{mmrm_model}{the mmrm model(s) of type \code{mmrm}, \code{mmrmList}, or \code{mmrmCV}
+used to calculate effect size}
 
 \item{mmrm_emm}{estimated marginal means from and MMRM.
 output of \link{mmrm_emmeans}}

@@ -56,7 +56,7 @@
 #' among individual subjects across timepoints.
 #'
 #' @returns
-#' mmrmObject or list of mmrmObjects
+#' `mmrmObject` or `mmrmList`, a list of `mmrmObjects`
 #'
 #' If return_all = FALSE, returns only the mmrmObject of the first model to
 #' converge or the last attempted model.\cr
@@ -162,6 +162,7 @@ mmrm <- function(formula,
       class(res) <- c("mmrm", class(res))
 
       res_list[[names(cov_list)[i]]] <- res
+      class(res_list) <- c("mmrmList", class(res))
 
       if (is.na(res$warnings) && stop_on_convergence) break
     }

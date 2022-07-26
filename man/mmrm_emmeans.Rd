@@ -4,26 +4,14 @@
 \alias{mmrm_emmeans}
 \title{Estimated Marignal Means of MMRM models}
 \usage{
-mmrm_emmeans(
-  object,
-  specs,
-  by = NULL,
-  fac.reduce = function(coefs) apply(coefs, 2, mean),
-  contr,
-  options = get_emm_option("emmeans"),
-  weights,
-  offset,
-  trend,
-  ...,
-  tran
-)
+mmrm_emmeans(obj, ...)
 }
 \value{
 see \link[emmeans:emmeans]{emmeans::emmeans}
 }
 \description{
-Alias for \link[emmeans:emmeans]{emmeans::emmeans} that provides support
-for using Kenward-Rogers degrees of freedom calculation.
+Generic method to run \link[emmeans:emmeans]{emmeans::emmeans} on all \link{MMRM} package objects using
+Kenward-Rogers degrees of freedom calculation.
 Please see \link[emmeans:emmeans]{emmeans::emmeans} for further documentation.
 }
 \details{

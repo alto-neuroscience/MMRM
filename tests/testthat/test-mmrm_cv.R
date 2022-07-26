@@ -13,13 +13,16 @@ test_that(
   {
     foreach::registerDoSEQ()
     expect_error(
-      mcv <- mmrm_cv(
-        outcome ~ baseline + group + time + baseline:time + group:time,
-        time = "time",
-        subjects = "subject",
-        data = test_data,
-        k = 3
-      ),
+      {
+        models = mmrm_cv(
+          outcome ~ baseline + group + time + baseline:time + group:time,
+          time = "time",
+          subjects = "subject",
+          data = test_data,
+          k = 3)
+        emms = mmrm_emmeans(models, specs = pairwise ~ time | group)
+        effs = mmrm_eff_size(models, emms)
+      },
       NA
     )
   }
@@ -31,13 +34,16 @@ test_that(
     cl <- parallel::makeCluster(3, outfile = "")
     doParallel::registerDoParallel(cl)
     expect_error(
-      mcv <- mmrm_cv(
-        outcome ~ baseline + group + time + baseline:time + group:time,
-        time = "time",
-        subjects = "subject",
-        data = test_data,
-        k = 3
-      ),
+      {
+        models = mmrm_cv(
+          outcome ~ baseline + group + time + baseline:time + group:time,
+          time = "time",
+          subjects = "subject",
+          data = test_data,
+          k = 3)
+        emms = mmrm_emmeans(models, specs = pairwise ~ time | group)
+        effs = mmrm_eff_size(models, emms)
+      },
       NA
     )
     parallel::stopCluster(cl)

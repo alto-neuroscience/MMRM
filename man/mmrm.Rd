@@ -60,7 +60,7 @@ and stop_on_convergence = FALSE, fits and
 returns all specified models}
 }
 \value{
-mmrmObject or list of mmrmObjects
+\code{mmrmObject} or \code{mmrmList}, a list of \code{mmrmObjects}
 
 If return_all = FALSE, returns only the mmrmObject of the first model to
 converge or the last attempted model.\cr

@@ -4,7 +4,16 @@
 \alias{mmrm_cv}
 \title{K-fold cross validation of MMRM models}
 \usage{
-mmrm_cv(formula, time, subjects, data, k = 10, in_loop = NULL, ...)
+mmrm_cv(
+  formula,
+  time,
+  subjects,
+  data,
+  k = 10,
+  seed = NULL,
+  in_loop = NULL,
+  ...
+)
 }
 \arguments{
 \item{formula}{formula for the fixed effects structure of the model}
@@ -17,12 +26,15 @@ mmrm_cv(formula, time, subjects, data, k = 10, in_loop = NULL, ...)
 
 \item{k}{the number of splits for k-fold cross-validation, default = 10}
 
+\item{seed}{random seed used to generating splits,
+If NULL does not set the seed}
+
 \item{in_loop}{function to process each split of training set data. See details}
 
 \item{...}{arguments passed to \code{in_loop} and \link{MMRM}}
 }
 \value{
-\code{mmrmCVObj}: a list of outputs with length \code{k},
+\code{mmrmCV} object: a list of outputs with length \code{k},
 each element is the output of a call to \link{mmrm}.
 See \link{mmrm} and \link{mmrmObject} for details
 }

@@ -28,6 +28,13 @@ my_mmrm = MMRM::mmrm(outcome ~ baseline + group + time + baseline:time + group:t
                      time = "time",
                      subjects = "subjects",
                      data = my_data)
+                     
+# fit MMRM using k-fold cross validation (steps below work the same)
+my_mmrm = MMRM::mmrm_cv(outcome ~ baseline + group + time + baseline:time + group:time,
+                     time = "time",
+                     subjects = "subjects",
+                     data = my_data,
+                     k = 10)
 
 # get estimated marginal means
 mmrm_emm = MMRM::mmrm_emmeans(my_mmrm,

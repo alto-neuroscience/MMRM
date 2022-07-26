@@ -9,6 +9,8 @@
 #' @param subjects the variable indicating unique subjects
 #' @param data the data structure
 #' @param k the number of splits for k-fold cross-validation, default = 10
+#' @param seed random seed used to generating splits,
+#'              If NULL does not set the seed
 #' @param in_loop function to process each split of training set data. See details
 #' @param ... arguments passed to \code{in_loop} and [MMRM]
 #'
@@ -39,7 +41,7 @@
 #'
 #'
 #' @returns
-#' `mmrmCVObj`: a list of outputs with length `k`,
+#' `mmrmCV` object: a list of outputs with length `k`,
 #' each element is the output of a call to [mmrm].
 #' See [mmrm] and [mmrmObject] for details
 #'
@@ -63,6 +65,7 @@ mmrm_cv <- function(formula,
                     subjects,
                     data,
                     k = 10,
+                    seed = NULL,
                     in_loop = NULL,
                     ...) {
 
@@ -70,36 +73,36 @@ mmrm_cv <- function(formula,
   formula <- .check_mmrm_args(formula, time, subjects, data)
 
   # get train and test split
-  data <- .mmrm_train_test_split(data, subjects, k)
+  data <- .mmrm_train_test_split(data, subjects, k, seed)
 
   # loop through groups and fit models
-  if (!foreach::getDoParRegistered()) {
-    foreach::registerDoSEQ()
-  }
-
+  .check_foreach_backend()
 
   mmrm_list <- foreach::foreach(i = 1:k) %dopar% {
     split_data <- data[data$k != i, ]
     if (!is.null(in_loop)) split_data <- in_loop(split_data, ...)
 
-    mmrm(
+    model = mmrm(
       formula,
       time,
       subjects,
       split_data,
       ...
     )
+    model$test = data[data$k == i,]
+    model
   }
 
   names(mmrm_list) <- 1:k
-  class(mmrm_list) <- c("mmrmCVObj")
+  class(mmrm_list) <- c("mmrmCV")
 
   return(mmrm_list)
 }
 
 #' @importFrom magrittr %>%
 #' @importFrom foreach %do%
-.mmrm_train_test_split <- function(data, subjects, k = 10) {
+.mmrm_train_test_split <- function(data, subjects, k = 10, seed = NULL) {
+  if (!is.null(seed)) set_seed(seed)
   subs <- unique(data[[subjects]])
   n_subs <- length(subs)
   sub_group <- sample(0:(n_subs - 1) / (n_subs - 1)) %>%
@@ -110,4 +113,8 @@ mmrm_cv <- function(formula,
     s[["k"]] <- sub_group[which(subs == s[[subjects]][1])]
     s
   }
+}
+
+.check_foreach_backend <- function() {
+  if (!foreach::getDoParRegistered()) foreach::registerDoSEQ()
 }
