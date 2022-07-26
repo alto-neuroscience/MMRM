@@ -15,7 +15,8 @@ mmrm(
   control = list(),
   verbose = FALSE,
   return_all = FALSE,
-  stop_on_convergence = TRUE
+  stop_on_convergence = TRUE,
+  ...
 )
 }
 \arguments{
@@ -37,7 +38,7 @@ until the model converges.}
 by maximizing the restricted log-likelihood. If "ML" the
 log-likelihood is maximized. Defaults to "REML".}
 
-\item{na.action}{a functoin that indicates what should happen when the
+\item{na.action}{a function that indicates what should happen when the
 data contain NAs. Defaults to na.omit}
 
 \item{control}{a list of control values fo the estimation algorithm to

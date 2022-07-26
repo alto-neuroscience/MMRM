@@ -14,7 +14,7 @@ matrix, the variance-covoariance matrix
 }
 \description{
 Compute the variance-covariance matrix of an mmrmObject.
-Copy of \link[SPR:VarCov_gls]{SPR::VarCov_gls}
+Copy of \href{https://cjangelo.github.io/SPR/reference/VarCov_gls.html}{VarCov_gls from the SPR package}
 }
 \seealso{
 \link[SPR:VarCov_gls]{SPR::VarCov_gls}

@@ -2,7 +2,7 @@
 #'
 #' @description
 #' Compute the variance-covariance matrix of an mmrmObject.
-#' Copy of [SPR::VarCov_gls]
+#' Copy of [VarCov_gls from the SPR package](https://cjangelo.github.io/SPR/reference/VarCov_gls.html)
 #'
 #' @param model mmrmObject (output of [mmrm])
 #'
