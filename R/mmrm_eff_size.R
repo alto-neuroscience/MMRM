@@ -28,21 +28,21 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, ...) {
   }
 
   df <- mean(as.data.frame(mmrm_emm$contrasts)[, "df"])
-  emmeans::eff_size(mmrm_emm,
+  suppressMessages(emmeans::eff_size(mmrm_emm,
     sigma = sigma(mmrm_model),
     edf = df,
     ...
-  )
+  ))
 }
 
 #' @importFrom foreach %dopar%
 #' @exportS3Method
 mmrm_eff_size.mmrmList <- function(mmrm_model, mmrm_emm, ...) {
   .check_foreach_backend()
-  eff_list = foreach::foreach(i = 1:length(mmrm_model)) %dopar% {
+  eff_list <- foreach::foreach(i = 1:length(mmrm_model)) %dopar% {
     mmrm_eff_size(mmrm_model[[i]], mmrm_emm[[i]], ...)
   }
-  names(eff_list) = names(mmrm_model)
+  names(eff_list) <- names(mmrm_model)
   eff_list
 }
 
@@ -50,17 +50,17 @@ mmrm_eff_size.mmrmList <- function(mmrm_model, mmrm_emm, ...) {
 #' @exportS3Method
 mmrm_eff_size.mmrmCV <- function(mmrm_model, mmrm_emm, ...) {
   .check_foreach_backend()
-  eff_list = foreach::foreach(i = 1:length(mmrm_model)) %dopar% {
+  eff_list <- foreach::foreach(i = 1:length(mmrm_model)) %dopar% {
     mmrm_eff_size(mmrm_model[[i]], mmrm_emm[[i]], ...)
   }
-  names(eff_list) = names(mmrm_model)
+  names(eff_list) <- names(mmrm_model)
   eff_list
 }
 
 #' @importFrom foreach %dopar%
 mmrm_emmeans.mmrmCV <- function(obj, ...) {
   .check_foreach_backend()
-  em_list = foreach::foreach(i = obj) %dopar% mmrm_emmeans(i, ...)
-  names(em_list) = names(obj)
+  em_list <- foreach::foreach(i = obj) %dopar% mmrm_emmeans(i, ...)
+  names(em_list) <- names(obj)
   em_list
 }
