@@ -1,7 +1,7 @@
 #' Estimated Marignal Means of MMRM models
 #'
-#' Alias for [emmeans::emmeans] that provides support
-#' for using Kenward-Rogers degrees of freedom calculation.
+#' Generic method to run [emmeans::emmeans] on all [MMRM] package objects using
+#' Kenward-Rogers degrees of freedom calculation.
 #' Please see [emmeans::emmeans] for further documentation.
 #'
 #' @details Support for Kenward-Rogers degrees of freedom calculation
@@ -28,4 +28,27 @@
 #' }
 #'
 #' @export
-mmrm_emmeans <- emmeans::emmeans
+mmrm_emmeans <- function(obj, ...) {
+  UseMethod("mmrm_emmeans")
+}
+
+#' @exportS3Method
+mmrm_emmeans.default <- emmeans::emmeans
+
+#' @importFrom foreach %dopar%
+#' @exportS3Method
+mmrm_emmeans.mmrmList <- function(obj, ...) {
+  .check_foreach_backend()
+  em_list <- foreach::foreach(i = obj) %dopar% mmrm_emmeans(obj, ...)
+  names(em_list) <- names(obj)
+  em_list
+}
+
+#' @importFrom foreach %dopar%
+#' @exportS3Method
+mmrm_emmeans.mmrmCV <- function(obj, ...) {
+  .check_foreach_backend()
+  em_list <- foreach::foreach(i = obj) %dopar% mmrm_emmeans(i, ...)
+  names(em_list) <- names(obj)
+  em_list
+}

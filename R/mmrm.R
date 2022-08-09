@@ -20,7 +20,7 @@
 #' @param method character, either "REML" or "ML". If "REML" the model is fit
 #'                   by maximizing the restricted log-likelihood. If "ML" the
 #'                   log-likelihood is maximized. Defaults to "REML".
-#' @param na.action a functoin that indicates what should happen when the
+#' @param na.action a function that indicates what should happen when the
 #'                      data contain NAs. Defaults to na.omit
 #' @param control a list of control values fo the estimation algorithm to
 #'                    to replace the default values returned by the function
@@ -56,7 +56,7 @@
 #' among individual subjects across timepoints.
 #'
 #' @returns
-#' mmrmObject or list of mmrmObjects
+#' `mmrmObject` or `mmrmList`, a list of `mmrmObjects`
 #'
 #' If return_all = FALSE, returns only the mmrmObject of the first model to
 #' converge or the last attempted model.\cr
@@ -88,51 +88,12 @@ mmrm <- function(formula,
                  control = list(),
                  verbose = FALSE,
                  return_all = FALSE,
-                 stop_on_convergence = TRUE) {
+                 stop_on_convergence = TRUE,
+                 ...) {
 
   # check arguments
-  if (missing(formula) ||
-    missing(time) ||
-    missing(subjects) ||
-    missing(data)) {
-    stop(
-      "missing argument! ",
-      "The following arguments must be specified: ",
-      "formula, time, subjects, data"
-    )
-  }
-  if (class(formula) == "character") formula <- as.formula(formula)
-  if (class(formula) != "formula") {
-    stop(
-      "formula argument must be a formula ",
-      "or a string that represents a formula"
-    )
-  }
-  if (class(time) != "character" || class(subjects) != "character") {
-    stop(
-      "the time and subjects arguments must be strings -- ",
-      "the column names of the time and subjects variables ",
-      "in the data structure"
-    )
-  }
-  if (!(time %in% names(data))) {
-    stop(
-      "the time variable (", time, ") ",
-      "was not found in data"
-    )
-  }
-  if (!(subjects %in% names(data))) {
-    stop(
-      "the subjects variable (", subjects, ") ",
-      "was not found in data"
-    )
-  }
-  if (!inherits(data, "data.frame")) {
-    stop(
-      "data is not a valid data structure ",
-      "(e.g., a data.frame, data.table, or tibble)"
-    )
-  }
+  formula <- .check_mmrm_args(formula, time, subjects, data)
+
   if (!return_all && !stop_on_convergence) {
     stop_on_convergence <- TRUE
     warning(
@@ -201,6 +162,7 @@ mmrm <- function(formula,
       class(res) <- c("mmrm", class(res))
 
       res_list[[names(cov_list)[i]]] <- res
+      class(res_list) <- c("mmrmList", class(res))
 
       if (is.na(res$warnings) && stop_on_convergence) break
     }
@@ -213,6 +175,53 @@ mmrm <- function(formula,
   } else {
     res
   }
+}
+
+.check_mmrm_args <- function(formula, time, subjects, data) {
+  if (missing(formula) ||
+    missing(time) ||
+    missing(subjects) ||
+    missing(data)) {
+    stop(
+      "missing argument! ",
+      "The following arguments must be specified: ",
+      "formula, time, subjects, data"
+    )
+  }
+  if (class(formula) == "character") formula <- as.formula(formula)
+  if (class(formula) != "formula") {
+    stop(
+      "formula argument must be a formula ",
+      "or a string that represents a formula"
+    )
+  }
+  if (class(time) != "character" || class(subjects) != "character") {
+    stop(
+      "the time and subjects arguments must be strings -- ",
+      "the column names of the time and subjects variables ",
+      "in the data structure"
+    )
+  }
+  if (!(time %in% names(data))) {
+    stop(
+      "the time variable (", time, ") ",
+      "was not found in data"
+    )
+  }
+  if (!(subjects %in% names(data))) {
+    stop(
+      "the subjects variable (", subjects, ") ",
+      "was not found in data"
+    )
+  }
+  if (!inherits(data, "data.frame")) {
+    stop(
+      "data is not a valid data structure ",
+      "(e.g., a data.frame, data.table, or tibble)"
+    )
+  }
+
+  return(formula)
 }
 
 COV_TYPES <- c(

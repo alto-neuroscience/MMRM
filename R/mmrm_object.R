@@ -11,6 +11,9 @@
 #' "mmrm" objects have all components of \link[nlme]{glsObject},
 #' plus the following:
 #' \item{data}{the data structure used to fit the model}
+#' \item{test}{test data held out when fitting the model
+#'               (only exists when using [mmrm_cv],
+#'                not calling [mmrm] directly)}
 #' \item{warnings}{warning messages from the model fitting procedure}
 #'
 #' @name mmrmObject
