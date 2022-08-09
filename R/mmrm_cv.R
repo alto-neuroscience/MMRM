@@ -82,14 +82,14 @@ mmrm_cv <- function(formula,
     split_data <- data[data$k != i, ]
     if (!is.null(in_loop)) split_data <- in_loop(split_data, ...)
 
-    model = mmrm(
+    model <- mmrm(
       formula,
       time,
       subjects,
       split_data,
       ...
     )
-    model$test = data[data$k == i,]
+    model$test <- data[data$k == i, ]
     model
   }
 

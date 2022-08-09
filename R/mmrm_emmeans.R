@@ -39,8 +39,8 @@ mmrm_emmeans.default <- emmeans::emmeans
 #' @exportS3Method
 mmrm_emmeans.mmrmList <- function(obj, ...) {
   .check_foreach_backend()
-  em_list = foreach::foreach(i = obj) %dopar% mmrm_emmeans(obj, ...)
-  names(em_list) = names(obj)
+  em_list <- foreach::foreach(i = obj) %dopar% mmrm_emmeans(obj, ...)
+  names(em_list) <- names(obj)
   em_list
 }
 
@@ -48,7 +48,7 @@ mmrm_emmeans.mmrmList <- function(obj, ...) {
 #' @exportS3Method
 mmrm_emmeans.mmrmCV <- function(obj, ...) {
   .check_foreach_backend()
-  em_list = foreach::foreach(i = obj) %dopar% mmrm_emmeans(i, ...)
-  names(em_list) = names(obj)
+  em_list <- foreach::foreach(i = obj) %dopar% mmrm_emmeans(i, ...)
+  names(em_list) <- names(obj)
   em_list
 }

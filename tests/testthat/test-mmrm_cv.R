@@ -14,14 +14,15 @@ test_that(
     foreach::registerDoSEQ()
     expect_error(
       {
-        models = mmrm_cv(
+        models <- mmrm_cv(
           outcome ~ baseline + group + time + baseline:time + group:time,
           time = "time",
           subjects = "subject",
           data = test_data,
-          k = 3)
-        emms = mmrm_emmeans(models, specs = pairwise ~ time | group)
-        effs = mmrm_eff_size(models, emms)
+          k = 3
+        )
+        emms <- mmrm_emmeans(models, specs = pairwise ~ time | group)
+        effs <- mmrm_eff_size(models, emms)
       },
       NA
     )
@@ -35,14 +36,15 @@ test_that(
     doParallel::registerDoParallel(cl)
     expect_error(
       {
-        models = mmrm_cv(
+        models <- mmrm_cv(
           outcome ~ baseline + group + time + baseline:time + group:time,
           time = "time",
           subjects = "subject",
           data = test_data,
-          k = 3)
-        emms = mmrm_emmeans(models, specs = pairwise ~ time | group)
-        effs = mmrm_eff_size(models, emms)
+          k = 3
+        )
+        emms <- mmrm_emmeans(models, specs = pairwise ~ time | group)
+        effs <- mmrm_eff_size(models, emms)
       },
       NA
     )
