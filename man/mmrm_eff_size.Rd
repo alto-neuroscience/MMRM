@@ -4,7 +4,7 @@
 \alias{mmrm_eff_size}
 \title{Calculate effect size for contrasts using estimated marginal means}
 \usage{
-mmrm_eff_size(mmrm_model, mmrm_emm, ...)
+mmrm_eff_size(mmrm_model, mmrm_emm, residual_error = TRUE, ...)
 }
 \arguments{
 \item{mmrm_model}{the mmrm model(s) of type \code{mmrm}, \code{mmrmList}, or \code{mmrmCV}
@@ -14,14 +14,17 @@ used to calculate effect size}
 output of \link{mmrm_emmeans}}
 
 \item{...}{additional arguments passed to \link[emmeans:eff_size]{emmeans::eff_size}}
+
+\item{edf}{equivalent degrees of freedom for the residual variance.
+See \link[emmeans:eff_size]{emmeans::eff_size} for details, by default NULL}
+}
+\value{
+data.frame with effect sizes calculated by emmeans
 }
 \description{
-Wrapper for \link[emmeans:eff_size]{emmeans::eff_size} to run for MMRM models.
-}
-\details{
-The \code{sigma} argument (the population standard deviation) for
-\link[emmeans:eff_size]{emmeans::eff_size} is calculated using \link[stats:sigma]{stats::sigma}. The \code{edf} argument
-(the equivalent degrees of freedom) is estimated as the mean of the
-degrees of freedom  across all contrasts calculated in \link{mmrm_emmeans}
-(typically using Kenward-Rogers approximation).
+Calculate timepoint by timepoint effect size for MMRM models as the
+least-squares means / sqrt(residual variance) at each timepoint.
+Calculated by running \link[emmeans:eff_size]{emmeans::eff_size} for each timepoint contrast,
+where the timepoint by timepoint residuals come from the diagonals of \link{varcov}.
+Uncertainty is estimated by \link[emmeans:eff_size]{emmeans::eff_size}.
 }
