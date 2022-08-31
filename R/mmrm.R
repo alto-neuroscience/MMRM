@@ -149,8 +149,8 @@ mmrm <- function(formula,
     } else {
       res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
       res$data <- data
-      res$time = time
-      res$subjects = subjects
+      res$time <- time
+      res$subjects <- subjects
       # res$na.action = na.action
       if (exists("wenv", mode = "environment")) {
         if (exists("warning_log", envir = wenv)) {

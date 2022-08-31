@@ -15,7 +15,9 @@
 #'                See [emmeans::eff_size] for details, by default NULL
 #' @param ... additional arguments passed to [emmeans::eff_size]
 #'
-#' @return data.frame with effect sizes calculated by emmeans
+#' @return [emmeans::emmGrid-class] object
+#' Note: effect sizes and confidence intervals are calculated on each timepoint
+#' contrast individually. The contrast covariance matrix only includes the diagonals.
 #'
 #'
 #' @export
@@ -30,10 +32,17 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
     stop("MMRM estimated marginal means object must include contrasts!")
   }
 
+
   res_var <- diag(varcov(mmrm_model))
   dfs <- if (is.null(edf)) as.data.frame(mmrm_emm$contrasts)[, "df"] else rep(edf, length(res_var))
 
-  foreach::foreach(i = 1:nrow(mmrm_emm$contrasts@grid), .combine = rbind) %do% {
+  efs_all <- suppressMessages(emmeans::eff_size(mmrm_emm,
+    sigma = sqrt(res_var[1]),
+    edf = dfs[1],
+    ...
+  ))
+
+  efs_ind <- foreach::foreach(i = 1:nrow(mmrm_emm$contrasts@grid)) %do% {
     this_emm <- mmrm_emm
     this_emm$contrasts <- mmrm_emm$contrasts[i]
     this_eff <- suppressMessages(emmeans::eff_size(this_emm,
@@ -42,8 +51,17 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
     ))
     this_eff@levels <- this_emm$contrasts@levels
     this_eff@grid <- this_emm$contrasts@grid
-    as.data.frame(this_eff)
+    this_eff
   }
+
+  bhats <- sapply(efs_ind, function(x) x@bhat)
+  Vdiags <- sapply(efs_ind, function(x) x@V)
+  V <- Vdiags * diag(length(Vdiags))
+
+  efs_all@bhat <- bhats
+  efs_all@V <- V
+
+  efs_all
 }
 
 #' @importFrom foreach %dopar%
