@@ -7,6 +7,8 @@
 "mmrm" objects have all components of \link[nlme]{glsObject},
 plus the following:
 \item{data}{the data structure used to fit the model}
+\item{time}{the name of the time column}
+\item{subjects}{the name of the subjects column}
 \item{test}{test data held out when fitting the model
 (only exists when using \link{mmrm_cv},
 not calling \link{mmrm} directly)}

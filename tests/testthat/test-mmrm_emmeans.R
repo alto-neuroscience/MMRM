@@ -23,7 +23,7 @@ test_that(
       subjects = "subject",
       data = test_data
     )
-    mmrm.emm <- mmrm_emmeans(mmrm.1, pairwise ~ time | group)
+    mmrm.emm <- mmrm_emmeans(mmrm.1, pairwise ~ group | time)
     mmrm.eff <- mmrm_eff_size(mmrm.1, mmrm.emm)
 
     gls.1 <- nlme::gls(
