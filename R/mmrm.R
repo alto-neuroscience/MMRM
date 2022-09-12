@@ -148,7 +148,7 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
-      res$data <- data
+      res$data <- na.action(data)
       res$time <- time
       res$subjects <- subjects
       # res$na.action = na.action
