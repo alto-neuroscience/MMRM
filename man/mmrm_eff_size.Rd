@@ -19,7 +19,9 @@ output of \link{mmrm_emmeans}}
 See \link[emmeans:eff_size]{emmeans::eff_size} for details, by default NULL}
 }
 \value{
-data.frame with effect sizes calculated by emmeans
+\link[emmeans:emmGrid-class]{emmeans::emmGrid} object
+Note: effect sizes and confidence intervals are calculated on each timepoint
+contrast individually. The contrast covariance matrix only includes the diagonals.
 }
 \description{
 Calculate timepoint by timepoint effect size for MMRM models as the
