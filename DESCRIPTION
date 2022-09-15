@@ -13,11 +13,12 @@ Description: Fit and evaluate MMRM models.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+Depends:
+    pbkrtest (>= 0.5.1.9004)
 Imports: 
     emmeans,
     estimability,
     nlme,
-    pbkrtest (>= 0.5.1.9003),
     foreach,
     doParallel
 Remotes:
