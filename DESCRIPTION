@@ -17,7 +17,7 @@ Imports:
     emmeans,
     estimability,
     nlme,
-    pbkrtest (>= 0.5.1.9002),
+    pbkrtest (>= 0.5.1.9003),
     foreach,
     doParallel
 Remotes:
