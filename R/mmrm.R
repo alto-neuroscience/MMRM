@@ -130,7 +130,7 @@ mmrm <- function(formula,
                 correlation = .(cov_list[[i]])(form = .(correlation_formula)),
                 weights = nlme::varIdent(form = .(weights_formula)),
                 method = .(method),
-                na.action = na.action,
+                na.action = .(na.action),
                 control = .(control),
                 verbose = .(verbose)
               )
