@@ -1,7 +1,13 @@
 ##################################################################
 ##                  emmeans emm_basis functions                 ##
-##           to support kenward-rogers with glsObject           ##
+##          to support kenward-rogers with mmrmObject           ##
 ##################################################################
+
+.onLoad <- function(libname, pkgname) {
+  if (requireNamespace("emmeans", quietly = TRUE)) {
+    emmeans::.emm_register("mmrm", pkgname)
+  }
+}
 
 .emm_basis_mmrm_kr <- function(object, trms, xlev, grid, mode = "kenward-rogers",
                                extra.iter = 0, options, misc,
@@ -69,9 +75,10 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = "kenward",
     mode <- "kenward-rogers"
     .emm_basis_mmrm_kr(
       object, trms, xlev, grid, mode,
-      extra.iter = 0, options, misc, ...
+      extra.iter, options, misc, ...
     )
   } else {
+    misc$data <- object$data
     emmeans:::emm_basis.gls(
       object, trms, xlev, grid, mode,
       extra.iter = 0, options, misc, ...
