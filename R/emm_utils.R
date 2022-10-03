@@ -50,7 +50,7 @@
 
   dfargs <- list(
     unadjV = V,
-    adjV = pbkrtest::vcovAdj.gls(object, 0)
+    adjV = pbkrtest::vcovAdj(object, 0)
   )
   V <- as.matrix(dfargs$adjV)
   tst <- try(pbkrtest::Lb_ddf)
