@@ -1,7 +1,7 @@
 Package: MMRM
 Type: Package
 Title: Mixed Model Repeated Measures Modelling 
-Version: 0.0.0.6
+Version: 0.0.0.7
 Authors@R: person("Gary", "Kane", email = "gkane@altoneuroscience.com",
   role = c("aut", "cre"))
 URL: https://github.com/alto-neuroscience/MMRM,
@@ -14,7 +14,8 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Depends:
-  pbkrtest
+    pbkrtest,
+    R (>= 3.0)
 Imports: 
     emmeans,
     estimability,
