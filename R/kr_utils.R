@@ -3,7 +3,8 @@
 ##                    Using pbkrtest package                   ##
 #################################################################
 
-#' @exportS3Method
+#' @importFrom nlme VarCorr
+#' @export
 VarCorr.mmrm <- function(model){
   vars = .vars(model)
   cors = .varcor(model)
@@ -21,21 +22,12 @@ VarCorr.mmrm <- function(model){
 ##  Adapted from https://github.com/hojsgaard/pbkrtest/pull/2   -
 ##---------------------------------------------------------------
 
-#' @exportS3Method
+#' @importFrom pbkrtest vcovAdj
+#' @export
 vcovAdj.mmrm <- pbkrtest:::vcovAdj.lmerMod
 
-# function(object, details=0){
-#   if (!(getME(object, "is_REML"))) {
-#     object <- update(object, . ~ ., REML = TRUE)
-#   }
-#   Phi      <- vcov(object)
-#   SigmaG   <- get_SigmaG( object, details )
-#   X        <- getME(object, "X")
-#   pbkrtest:::vcovAdj_internal( Phi, SigmaG, X, details=details)
-# }
-
-
-#' @exportS3Method
+#' @importFrom lme4 getME
+#' @export
 getME.mmrm <- function(object, name, ...){
   groups <- object$groups
   glsSt <- object$modelStruct$corStruct
@@ -101,15 +93,14 @@ getME.mmrm <- function(object, name, ...){
   }
 }
 
-
-#' @exportS3Method
-#' @import pbkrtest
+#' @importFrom pbkrtest get_SigmaG
+#' @export
 get_SigmaG.mmrm <- function(object, details=0) {
 
   DB <- details > 0 ## For debugging only
 
   # variance-covariance of random effects
-  GGamma <- VarCorr(object)
+  GGamma <- nlme::VarCorr(object)
 
   ## Put covariance parameters for the random effects into a vector:
   ## Fixme: It is a bit ugly to throw everything into one long vector here; a list would be more elegant

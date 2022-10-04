@@ -3,12 +3,6 @@
 ##          to support kenward-rogers with mmrmObject           ##
 ##################################################################
 
-.onLoad <- function(libname, pkgname) {
-  if (requireNamespace("emmeans", quietly = TRUE)) {
-    emmeans::.emm_register("mmrm", pkgname)
-  }
-}
-
 .emm_basis_mmrm_kr <- function(object, trms, xlev, grid, mode = "kenward-rogers",
                                extra.iter = 0, options, misc,
                                pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"),
@@ -69,6 +63,7 @@
   )
 }
 
+#' @export
 emm_basis.mmrm <- function(object, trms, xlev, grid, mode = "kenward",
                            extra.iter = 0, options, misc, ...) {
   if (grepl("kenward", tolower(mode)) | tolower(mode) == "KR") {

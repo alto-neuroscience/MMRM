@@ -14,17 +14,18 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Depends:
-    pbkrtest,
     R (>= 3.0)
 Imports: 
     emmeans,
     estimability,
-    nlme,
     foreach,
-    doParallel
+    magrittr,
+    Matrix,
+    nlme,
+    lme4,
+    pbkrtest
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
-Suggests: 
-    lme4,
+Suggests:
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
