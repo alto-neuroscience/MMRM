@@ -46,7 +46,7 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
     this_emm <- mmrm_emm
     this_emm$contrasts <- mmrm_emm$contrasts[i]
     this_eff <- suppressMessages(emmeans::eff_size(this_emm,
-      sigma = sqrt(res_var[i]),
+      sigma = sqrt(res_var[this_emm$contrasts@levels[[2]]]),
       edf = dfs[i]
     ))
     this_eff@levels <- this_emm$contrasts@levels
