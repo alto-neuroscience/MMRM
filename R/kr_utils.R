@@ -64,11 +64,13 @@ getME.mmrm <- function(object, name, ...){
     missed = which(!sapply(levels(inter_obs), function(x) x %in% inter_obs))
 
     dims = attr(glsSt, "Dim")
+    lvls = .get_levels(object)
+
     cn = order(revOrder)
     rn = 1:dims$N
     for (i in missed) rn[rn>=i] = rn[rn>=i] + 1
 
-    Zt = Matrix::sparseMatrix(rn, cn, x=1, dims=c(dims$M*dims$maxLen, dims$N))
+    Zt = Matrix::sparseMatrix(rn, cn, x=1, dims=c(dims$M*lvls, dims$N))
     return(Zt)
   }
   if(name=='X_star'){
@@ -114,7 +116,7 @@ get_SigmaG.mmrm <- function(object, details=0) {
   n.lev = length(unique(object$groups))
   Ig    <- Matrix::sparseMatrix(1:n.lev, 1:n.lev, x=1)
 
-  n.comp.by.RT = attr(object$modelStruct$corStruct, "Dim")$maxLen
+  n.comp.by.RT = .get_levels(object)
   n.parm.by.RT = (n.comp.by.RT + 1) * n.comp.by.RT / 2
   for (rr in 1:n.parm.by.RT) {
     ii.jj = pbkrtest:::.index2UpperTriEntry(rr, n.comp.by.RT)

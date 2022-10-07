@@ -23,7 +23,7 @@ varcov <- function(model) {
 
 .varcor <- function(model) {
   r <- coef(model$modelStruct$corStruct, uncons = FALSE, allCoef = TRUE)
-  N <- attr(model$modelStruct$corStruct, "Dim")$maxLen
+  N <- .get_levels(model)
   cors <- diag(1, N)
   cors[lower.tri(cors)] <- r
   cors[upper.tri(cors)] <- t(cors)[upper.tri(t(cors))]
@@ -38,4 +38,11 @@ varcov <- function(model) {
   vars <- (coef(model$modelStruct$varStruct, uncons = FALSE, allCoef = TRUE)^2 *
              model$sigma^2)[var_order]
   vars
+}
+
+.get_levels <- function(model) {
+  if (is(model, "mmrm")) {
+    model = model$modelStruct
+  }
+  length(attr(model$varStruct, "groupNames"))
 }

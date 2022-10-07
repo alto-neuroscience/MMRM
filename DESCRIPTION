@@ -23,7 +23,8 @@ Imports:
     Matrix,
     nlme,
     lme4,
-    pbkrtest
+    pbkrtest,
+    MASS
 RoxygenNote: 7.2.1
 Roxygen: list(markdown = TRUE)
 Suggests:
