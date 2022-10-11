@@ -19,12 +19,95 @@ VarCorr.mmrm <- function(model){
 
 
 ##---------------------------------------------------------------
-##  Adapted from https://github.com/hojsgaard/pbkrtest/pull/2   -
+##  Adapted from pbkrtest and merDeriv packages
+##  https://github.com/hojsgaard/pbkrtest
+##  https://github.com/nctingwang/merDeriv
 ##---------------------------------------------------------------
 
+tr = function(x) sum(Matrix::diag(x))
+
 #' @importFrom pbkrtest vcovAdj
+#' @import Matrix
 #' @export
-vcovAdj.mmrm <- pbkrtest:::vcovAdj.lmerMod
+vcovAdj.mmrm <- function(object, information="expected") {
+
+  Phi = vcov(object)
+  SigmaG = get_SigmaG.mmrm(object)
+  n.ggamma = SigmaG$n.ggamma
+  G_r = SigmaG$G[1:n.ggamma]
+  Sigma = SigmaG$Sigma
+  X = getME.mmrm(object, "X")
+
+  SigmaInv = chol2inv(chol(forceSymmetric(as.matrix(Sigma))))
+  P = SigmaInv - SigmaInv %*% X %*% solve(t(X) %*% SigmaInv %*% X) %*% t(X) %*% SigmaInv
+
+  info_exp = info_avg = matrix(0, nrow=n.ggamma, ncol=n.ggamma)
+  if (information %in% c("expected", "observed")) {
+    for(i in 1:n.ggamma) {
+      for (j in 1:n.ggamma) {
+        info_exp[i, j] <- info_exp[j, i] <- 0.5 * tr(P %*% G_r[[i]] %*% P %*% G_r[[j]])
+      }
+    }
+  }
+  if (information %in% c("average", "observed")) {
+    r_hat = object$residuals
+    for(i in 1:n.ggamma) {
+      for (j in 1:n.ggamma) {
+        info_avg[i, j] <- info_avg[j, i] <- 0.5 * as.numeric(r_hat %*% P %*% G_r[[i]] %*% P %*% G_r[[j]] %*% P %*% r_hat)
+      }
+    }
+  }
+  if (information == "observed") {
+    info = -info_exp + 2 * info_avg
+  } else {
+    info = info_exp + info_avg
+  }
+
+  info2 = 2 * info
+
+  ###################
+  # copied and slightly modified from pbkrtest:::vcovadj_internal
+
+  TT = SigmaInv %*% X
+  HH = lapply(G_r, function(x) x %*% SigmaInv)
+  OO = lapply(HH, function(x) x %*% X)
+  PP <- QQ <- NULL
+  for (rr in 1:n.ggamma) {
+    OrTrans <- t(OO[[rr]])
+    PP <- c(PP, list(forceSymmetric(-1 * OrTrans %*% TT)))
+    for (ss in rr:n.ggamma) {
+      QQ <- c(QQ, list(OrTrans %*% SigmaInv %*% OO[[ss]]))
+    }
+  }
+
+  eig_info2 = eigen(info2, only.values=TRUE)$values
+  condi <- min(abs(eig_info2))
+  WW <- if (condi > 1e-10) forceSymmetric(2 * solve(info2)) else forceSymmetric(2 * MASS::ginv(info2))
+  UU <- matrix(0, nrow = ncol(X), ncol = ncol(X))
+  for (ii in 1:(n.ggamma - 1)) {
+    for (jj in c((ii + 1):n.ggamma)) {
+      www <- pbkrtest:::.indexSymmat2vec(ii, jj, n.ggamma)
+      UU <- UU + WW[ii, jj] * (QQ[[www]] - PP[[ii]] %*%
+                                 Phi %*% PP[[jj]])
+    }
+  }
+  UU <- UU + t(UU)
+  for (ii in 1:n.ggamma) {
+    www <- pbkrtest:::.indexSymmat2vec(ii, ii, n.ggamma)
+    UU <- UU + WW[ii, ii] * (QQ[[www]] - PP[[ii]] %*% Phi %*%
+                               PP[[ii]])
+  }
+  GGAMMA <- Phi %*% UU %*% Phi
+  PhiA <- Phi + 2 * GGAMMA
+  attr(PhiA, "P") <- PP
+  attr(PhiA, "W") <- WW
+  attr(PhiA, "condi") <- condi
+  PhiA
+}
+
+##---------------------------------------------------------------
+##  Adapted from https://github.com/hojsgaard/pbkrtest/pull/2   -
+##---------------------------------------------------------------
 
 #' @importFrom lme4 getME
 #' @export
@@ -62,6 +145,12 @@ getME.mmrm <- function(object, name, ...){
   if(name=='Zt'){
     inter_obs = interaction(dataMod)
     missed = which(!sapply(levels(inter_obs), function(x) x %in% inter_obs))
+
+    if (length(missed) / length(levels(inter_obs)) > 0.33) {
+      warning("A lot of missing observations ",
+              "(greater than 50% for at least one time point)! ",
+              "Kenward-Roger degrees of freedom may be unrelaible.")
+    }
 
     dims = attr(glsSt, "Dim")
     lvls = .get_levels(object)

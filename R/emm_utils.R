@@ -4,7 +4,7 @@
 ##################################################################
 
 .emm_basis_mmrm_kr <- function(object, trms, xlev, grid, mode = "kenward-rogers",
-                               extra.iter = 0, options, misc,
+                               extra.iter = 0, options, misc, information = "expected",
                                pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"),
                                ...) {
   contrasts <- object$contrasts
@@ -44,7 +44,7 @@
 
   dfargs <- list(
     unadjV = V,
-    adjV = pbkrtest::vcovAdj(object, 0)
+    adjV = vcovAdj.mmrm(object, information = information)
   )
   V <- as.matrix(dfargs$adjV)
   tst <- try(pbkrtest::Lb_ddf)
@@ -65,12 +65,12 @@
 
 #' @export
 emm_basis.mmrm <- function(object, trms, xlev, grid, mode = "kenward",
-                           extra.iter = 0, options, misc, ...) {
+                           extra.iter = 0, options, misc, information = "expected", ...) {
   if (grepl("kenward", tolower(mode)) | tolower(mode) == "KR") {
     mode <- "kenward-rogers"
     .emm_basis_mmrm_kr(
       object, trms, xlev, grid, mode,
-      extra.iter, options, misc, ...
+      extra.iter, options, misc, information = information, ...
     )
   } else {
     misc$data <- object$data
