@@ -67,6 +67,7 @@ vcovAdj.mmrm <- function(object, information="expected") {
 
   ###################
   # copied and slightly modified from pbkrtest:::vcovadj_internal
+  ###################
 
   TT = SigmaInv %*% X
   HH = lapply(G_r, function(x) x %*% SigmaInv)
@@ -145,12 +146,6 @@ getME.mmrm <- function(object, name, ...){
   if(name=='Zt'){
     inter_obs = interaction(dataMod)
     missed = which(!sapply(levels(inter_obs), function(x) x %in% inter_obs))
-
-    if (length(missed) / length(levels(inter_obs)) > 0.33) {
-      warning("A lot of missing observations ",
-              "(greater than 50% for at least one time point)! ",
-              "Kenward-Roger degrees of freedom may be unrelaible.")
-    }
 
     dims = attr(glsSt, "Dim")
     lvls = .get_levels(object)
