@@ -47,11 +47,11 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
 
   if ((!is.matrix(object$apVar)) & (!force_mode)) {
     warning(
-      m$apVar,
-      ". Using mode = ",
-      "df.error! If you would still like to try mode = ",
+      object$apVar,
+      "; using mode = ",
+      "df.error. If you would still like to try mode = ",
       mode,
-      ", please set the argument 'force_mode=TRUE'"
+      ", please set the argument 'force_mode=TRUE'."
     )
     mode <- "df.error"
   }
