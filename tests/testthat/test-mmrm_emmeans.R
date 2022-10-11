@@ -1,4 +1,5 @@
 library(MMRM)
+library(testthat)
 
 if (!requireNamespace("lme4")) {
   stop("lme4 package not installed and is needed to run tests!")
@@ -8,41 +9,54 @@ if (!requireNamespace("lme4")) {
 
 ###
 
-test_data <- as.data.frame(nlme::Dialyzer)
-names(test_data) <- c("subject", "group", "baseline", "outcome", "time")
-test_data$time <- factor(test_data$time)
+compare_mmrm_lmer <- function(d) {
+  d$time <- factor(d$time)
 
-###
+  m <- mmrm(chg ~ base + arm + time + base:time + arm:time,
+    time = "time",
+    subjects = "subject",
+    data = d
+  )
 
-test_that(
-  "Fixed effects of MMRM results against equivalent lmer model",
-  {
-    mmrm.1 <- mmrm(
-      outcome ~ baseline + group + time + baseline:time + group:time,
-      time = "time",
-      subjects = "subject",
-      data = test_data
+  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time, mode = "kenward")
+  m_eff <- mmrm_eff_size(m, m_emm)
+
+  l <- suppressMessages(suppressWarnings(
+    lmer(chg ~ base + arm + time + base:time + arm:time + (0 + time | subject),
+      data = d,
+      control = lmerControl(check.nobs.vs.nRE = "ignore")
     )
-    mmrm.emm <- mmrm_emmeans(mmrm.1, pairwise ~ group | time)
-    mmrm.eff <- mmrm_eff_size(mmrm.1, mmrm.emm)
+  ))
+  l_emm <- emmeans::emmeans(l, pairwise ~ arm | time)
 
-    gls.1 <- nlme::gls(
-      outcome ~ baseline + group + time + baseline:time + group:time,
+  g <- try(
+    nlme::gls(chg ~ base + arm + time + base:time + arm:time,
       correlation = nlme::corSymm(form = ~ as.numeric(time) | subject),
       weights = nlme::varIdent(form = ~ 1 | time),
-      data = test_data
-    )
+      data = d,
+      na.action = na.exclude
+    ),
+    silent = TRUE
+  )
+  if (!inherits(g, "try-error")) {
+    expect_equal(m$coefficients, g$coefficients, tolerance = 1e-5)
+  }
+  tol <- if (isSingular(l)) 1e-1 else 1e-3
+  if (("corSymm" %in% attr(m$modelStruct$corStruct, "class")) & (is.matrix(m$apVar))) {
+    expect_equal(data.frame(m_emm), data.frame(l_emm), tolerance = tol)
+  }
+}
 
-    lmer.1 <- suppressWarnings(
-      lmer(
-        outcome ~ baseline + group + time + baseline:time + group:time + (0 + time | subject),
-        data = test_data,
-        control = lmerControl(check.nobs.vs.nRE = "ignore")
-      )
-    )
-
-    testthat::expect_equal(mmrm.1$coefficients, fixef(lmer.1), tolerance = 1e-3)
-    testthat::expect_equal(mmrm.1$coefficients, gls.1$coefficients, tolerance = 1e-5)
-    testthat::expect_equal(varcov(mmrm.1), varcov(gls.1), tolerance = 1e-5)
+test_that(
+  "Compare MMRM against equivalent lmer model",
+  {
+    set.seed(42)
+    for (i in 1:100) {
+      n_subs <- sample(10:50, 1)
+      n_timepoints <- sample(2:6, 1)
+      p_missing <- runif(n_timepoints) / 2
+      sim_data <- mmrm_simulate(n_subs, n_timepoints, p_missing = p_missing)
+      compare_mmrm_lmer(sim_data)
+    }
   }
 )

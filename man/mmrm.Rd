@@ -77,7 +77,7 @@ are correlated across timepoints.
 \details{
 The MMRM implemented here is defined as:
 \deqn{Y_i = X_i\beta + \epsilon_i}
-\deqn{\epsilon_i ~ \mathcal{N}(0, \Sigma_i)}
+\deqn{\epsilon_i \sim \mathcal{N}(0, \Sigma_i)}
 \itemize{
 \item \eqn{Y_i} as the vector of outcomes with length
 \eqn{n_{subjects}*n_{timepoints}}

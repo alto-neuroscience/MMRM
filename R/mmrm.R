@@ -40,7 +40,7 @@
 #' @details
 #' The MMRM implemented here is defined as:
 #' \deqn{Y_i = X_i\beta + \epsilon_i}
-#' \deqn{\epsilon_i ~ \mathcal{N}(0, \Sigma_i)}
+#' \deqn{\epsilon_i \sim \mathcal{N}(0, \Sigma_i)}
 #' * \eqn{Y_i} as the vector of outcomes with length
 #' \eqn{n_{subjects}*n_{timepoints}}
 #' * \eqn{X_i} as the a matrix of predictors with
@@ -130,7 +130,7 @@ mmrm <- function(formula,
                 correlation = .(cov_list[[i]])(form = .(correlation_formula)),
                 weights = nlme::varIdent(form = .(weights_formula)),
                 method = .(method),
-                na.action = na.action,
+                na.action = .(na.action),
                 control = .(control),
                 verbose = .(verbose)
               )
@@ -148,10 +148,10 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
-      res$data <- data
+      res$data <- na.action(subset(data, select = c(names(attr(res$terms, "dataClasses")), subjects)))
       res$time <- time
       res$subjects <- subjects
-      # res$na.action = na.action
+
       if (exists("wenv", mode = "environment")) {
         if (exists("warning_log", envir = wenv)) {
           res$warnings <- warning_log

@@ -9,11 +9,8 @@ This package is currently in beta version -- more testing and examples to come!
 
 ## Installation
 
-##### Note: This package requires a [fork of the `pbkrtest` package](https://github.com/gkane26/pbkrtest/tree/nlme)
-
 ``` r
 if(!requireNamespace("remotes")) install.packages("remotes")
-try(remotes::install_github("gkane26/pbkrtest@nlme"))
 remotes::install_github("alto-neuroscience/MMRM")
 ```
 
