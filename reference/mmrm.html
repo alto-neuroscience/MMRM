@@ -20,7 +20,7 @@ are correlated across timepoints."><!-- mathjax --><script src="https://cdnjs.cl
     
     <a class="navbar-brand me-2" href="../index.html">MMRM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -160,7 +160,7 @@ converge or the last attempted model.<br></p>
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The MMRM implemented here is defined as:
 $$Y_i = X_i\beta + \epsilon_i$$
-$$\epsilon_i ~ \mathcal{N}(0, \Sigma_i)$$</p><ul><li><p>\(Y_i\) as the vector of outcomes with length
+$$\epsilon_i \sim \mathcal{N}(0, \Sigma_i)$$</p><ul><li><p>\(Y_i\) as the vector of outcomes with length
 \(n_{subjects}*n_{timepoints}\)</p></li>
 <li><p>\(X_i\) as the a matrix of predictors with
 \(n_{subjects}*n_{timepoints}\) rows and \(n_{predictors}\) columns</p></li>
