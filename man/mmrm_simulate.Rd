@@ -66,7 +66,7 @@ with the following fields:
 \item arm: the study arm or group
 \item base: baseline score
 \item time: time point of observation
-\item outcome: the outcome score
+\item chg: the change score at the given time point (i.e., the outcome)
 }
 }
 \description{
