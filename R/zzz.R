@@ -12,8 +12,8 @@
   register_s3_method("pbkrtest", "get_SigmaG", "mmrm")
 }
 
-register_s3_method = function (pkg, generic, class, envir = parent.frame()) {
-  fun = get(paste0(generic, ".", class), envir = envir)
+register_s3_method <- function(pkg, generic, class, envir = parent.frame()) {
+  fun <- get(paste0(generic, ".", class), envir = envir)
   if (isNamespaceLoaded(pkg)) {
     registerS3method(generic, class, fun, envir = asNamespace(pkg))
   }

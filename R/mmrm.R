@@ -148,10 +148,10 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
-      res$data <- na.action(subset(data, select=c(names(attr(res$terms, "dataClasses")), subjects)))
+      res$data <- na.action(subset(data, select = c(names(attr(res$terms, "dataClasses")), subjects)))
       res$time <- time
       res$subjects <- subjects
-      # res$na.action = na.action
+
       if (exists("wenv", mode = "environment")) {
         if (exists("warning_log", envir = wenv)) {
           res$warnings <- warning_log

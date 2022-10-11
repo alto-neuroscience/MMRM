@@ -9,45 +9,41 @@ if (!requireNamespace("lme4")) {
 
 ###
 
-check_data = function(d) {
-  v = F
-  for (x in unique(d$time)) {
-    o = d[d$time == x, "outcome"]
-    v = as.logical(sum(v, mean(is.na(o)) > 0.5))
-  }
-  !v
-}
+compare_mmrm_lmer <- function(d) {
+  d$time <- factor(d$time)
 
-compare_mmrm_lmer = function(d) {
-  d$time = factor(d$time)
+  m <- mmrm(chg ~ base + arm + time + base:time + arm:time,
+    time = "time",
+    subjects = "subject",
+    data = d
+  )
 
-  m = mmrm(chg ~ base + arm + time + base:time + arm:time,
-           time = "time",
-           subjects = "subject",
-           data=d)
-  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time)
+  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time, mode = "kenward")
   m_eff <- mmrm_eff_size(m, m_emm)
 
-  l = suppressMessages(suppressWarnings(
+  l <- suppressMessages(suppressWarnings(
     lmer(chg ~ base + arm + time + base:time + arm:time + (0 + time | subject),
-         data = d,
-         control = lmerControl(check.nobs.vs.nRE = "ignore"))
+      data = d,
+      control = lmerControl(check.nobs.vs.nRE = "ignore")
+    )
   ))
-  l_emm = emmeans::emmeans(l, pairwise ~ arm | time)
+  l_emm <- emmeans::emmeans(l, pairwise ~ arm | time)
 
   g <- try(
     nlme::gls(chg ~ base + arm + time + base:time + arm:time,
-              correlation = nlme::corSymm(form = ~ as.numeric(time) | subject),
-              weights = nlme::varIdent(form = ~ 1 | time),
-              data = d,
-              na.action = na.exclude), silent=TRUE
+      correlation = nlme::corSymm(form = ~ as.numeric(time) | subject),
+      weights = nlme::varIdent(form = ~ 1 | time),
+      data = d,
+      na.action = na.exclude
+    ),
+    silent = TRUE
   )
   if (!inherits(g, "try-error")) {
     expect_equal(m$coefficients, g$coefficients, tolerance = 1e-5)
   }
-  tol = if (isSingular(l)) 1e-1 else 1e-3
-  if ("corSymm" %in% attr(m$modelStruct$corStruct, "class")) {
-    expect_equal(data.frame(m_emm), data.frame(l_emm), tolerance=tol)
+  tol <- if (isSingular(l)) 1e-1 else 1e-3
+  if (("corSymm" %in% attr(m$modelStruct$corStruct, "class")) & (is.matrix(m$apVar))) {
+    expect_equal(data.frame(m_emm), data.frame(l_emm), tolerance = tol)
   }
 }
 
@@ -56,11 +52,10 @@ test_that(
   {
     set.seed(42)
     for (i in 1:100) {
-      print(i)
-      n_subs = sample(10:50, 1)
-      n_timepoints = sample(2:6, 1)
-      p_missing = runif(n_timepoints) / 2
-      sim_data = mmrm_simulate(n_subs, n_timepoints, p_missing=p_missing)
+      n_subs <- sample(10:50, 1)
+      n_timepoints <- sample(2:6, 1)
+      p_missing <- runif(n_timepoints) / 2
+      sim_data <- mmrm_simulate(n_subs, n_timepoints, p_missing = p_missing)
       compare_mmrm_lmer(sim_data)
     }
   }

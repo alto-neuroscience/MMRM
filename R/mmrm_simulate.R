@@ -49,76 +49,81 @@
 #' * chg: the change score at the given time point (i.e., the outcome)
 #'
 #' @export
-mmrm_simulate <- function(n_per_arm=50,
-                          n_timepoints=5,
-                          effect_tp=8,
-                          effect_baseline=-0.5,
-                          effect_arm=2,
-                          covariance=NULL,
-                          variance=10,
-                          correlation=0,
+mmrm_simulate <- function(n_per_arm = 50,
+                          n_timepoints = 5,
+                          effect_tp = 8,
+                          effect_baseline = -0.5,
+                          effect_arm = 2,
+                          covariance = NULL,
+                          variance = 10,
+                          correlation = 0,
                           baseline = c(25, 5),
-                          p_missing=0.1) {
-
-  len_tp = length(effect_tp)
-  len_baseline = length(effect_baseline)
-  len_arm = length(effect_arm)
-  max_len = max(len_tp, len_baseline, len_arm)
+                          p_missing = 0.1) {
+  len_tp <- length(effect_tp)
+  len_baseline <- length(effect_baseline)
+  len_arm <- length(effect_arm)
+  max_len <- max(len_tp, len_baseline, len_arm)
   if (max_len > 1) {
-    lens = c(len_tp, len_baseline, len_arm)
+    lens <- c(len_tp, len_baseline, len_arm)
     if (any((lens != max_len) & (lens > 1))) {
-      stop("effect_tp, effect_baseline, and effect_arm have ",
-           "different lengths. They must be scalars or vectors with length equal ",
-           "to the number of timepoints.")
+      stop(
+        "effect_tp, effect_baseline, and effect_arm have ",
+        "different lengths. They must be scalars or vectors with length equal ",
+        "to the number of timepoints."
+      )
     }
-    n_timepoints = max_len
+    n_timepoints <- max_len
   }
 
   if (is.null(covariance)) {
-    cor_len = (n_timepoints * (n_timepoints - 1)) / 2
+    cor_len <- (n_timepoints * (n_timepoints - 1)) / 2
     if (
       ((length(variance) > 1) & (length(variance) != n_timepoints)) |
-      ((length(correlation) > 1) & (length(correlation) != cor_len))
+        ((length(correlation) > 1) & (length(correlation) != cor_len))
     ) {
-      stop("variance and correlation must be either scalars or length ",
-           "n_timepoints and n_timepoints*(n_timepoints-1)/2, respectively")
+      stop(
+        "variance and correlation must be either scalars or length ",
+        "n_timepoints and n_timepoints*(n_timepoints-1)/2, respectively"
+      )
     }
 
-    if (length(variance) < n_timepoints) variance = rep(variance, n_timepoints)
-    if (length(correlation) < cor_len) correlation = rep(correlation, cor_len)
-    lower_chol = diag(1, n_timepoints)
-    lower_chol[lower.tri(lower_chol)] = correlation
-    lower_chol[upper.tri(lower_chol)] = t(lower_chol)[upper.tri(lower_chol)]
-    lower_chol = diag(sqrt(variance)) %*% lower_chol
-    covariance = lower_chol %*% t(lower_chol)
+    if (length(variance) < n_timepoints) variance <- rep(variance, n_timepoints)
+    if (length(correlation) < cor_len) correlation <- rep(correlation, cor_len)
+    lower_chol <- diag(1, n_timepoints)
+    lower_chol[lower.tri(lower_chol)] <- correlation
+    lower_chol[upper.tri(lower_chol)] <- t(lower_chol)[upper.tri(lower_chol)]
+    lower_chol <- diag(sqrt(variance)) %*% lower_chol
+    covariance <- lower_chol %*% t(lower_chol)
   }
 
-  if (len_tp < n_timepoints) effect_tp = rep(effect_tp, n_timepoints)
-  if (len_baseline < n_timepoints) effect_baseline = rep(effect_baseline, n_timepoints)
-  if (len_arm < n_timepoints) effect_arm = rep(effect_arm, n_timepoints)
+  if (len_tp < n_timepoints) effect_tp <- rep(effect_tp, n_timepoints)
+  if (len_baseline < n_timepoints) effect_baseline <- rep(effect_baseline, n_timepoints)
+  if (len_arm < n_timepoints) effect_arm <- rep(effect_arm, n_timepoints)
 
-  base_vals = rnorm(n_per_arm*2, baseline[1], baseline[2])
-  arm_vals = sample(c(rep(0, n_per_arm), rep(1, n_per_arm)))
+  base_vals <- rnorm(n_per_arm * 2, baseline[1], baseline[2])
+  arm_vals <- sample(c(rep(0, n_per_arm), rep(1, n_per_arm)))
 
-  mus = matrix(rep(effect_tp, n_per_arm*2), nrow=n_per_arm*2)
-  mus = mus + base_vals %*% t(effect_baseline)
-  mus = mus + arm_vals %*% t(effect_arm)
+  mus <- matrix(rep(effect_tp, n_per_arm * 2), nrow = n_per_arm * 2)
+  mus <- mus + base_vals %*% t(effect_baseline)
+  mus <- mus + arm_vals %*% t(effect_arm)
 
-  noise = MASS::mvrnorm(n_per_arm*2, rep(0, n_timepoints), covariance)
-  outcomes = mus + noise
+  noise <- MASS::mvrnorm(n_per_arm * 2, rep(0, n_timepoints), covariance)
+  outcomes <- mus + noise
 
-  if (length(p_missing) < n_timepoints) p_missing = rep(p_missing, n_timepoints)
+  if (length(p_missing) < n_timepoints) p_missing <- rep(p_missing, n_timepoints)
   for (c in 1:ncol(outcomes)) {
-    mask = sample(c(NA, 1), n_per_arm*2, replace=T, prob=c(p_missing[c], 1-p_missing[c]))
-    outcomes[, c] = outcomes[, c] * mask
+    mask <- sample(c(NA, 1), n_per_arm * 2, replace = T, prob = c(p_missing[c], 1 - p_missing[c]))
+    outcomes[, c] <- outcomes[, c] * mask
   }
 
-  data.frame(n_subs = n_per_arm,
-             subject = 1:(n_per_arm * 2),
-             arm = arm_vals,
-             base = base_vals,
-             time = rep(1:n_timepoints, each=n_per_arm*2),
-             chg = as.numeric(outcomes))
+  data.frame(
+    n_subs = n_per_arm,
+    subject = 1:(n_per_arm * 2),
+    arm = arm_vals,
+    base = base_vals,
+    time = rep(1:n_timepoints, each = n_per_arm * 2),
+    chg = as.numeric(outcomes)
+  )
 }
 
 #'

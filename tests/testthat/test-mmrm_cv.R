@@ -3,8 +3,8 @@ library(MMRM)
 ###
 
 test_data <- sim_mmrm_100
-test_data$time = factor(test_data$time)
-test_data = as.data.frame(test_data)
+test_data$time <- factor(test_data$time)
+test_data <- as.data.frame(test_data)
 
 ###
 
