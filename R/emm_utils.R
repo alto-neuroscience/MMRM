@@ -43,7 +43,7 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
   mode <- match.arg(mode)
   if (mode == "boot-satterthwaite") mode <- "appx-satterthwaite"
   if (!is.null(options$df)) mode <- "df.error"
-  if (mode == "auto") mode <- "kenward"
+  if (mode == "auto") mode <- "kenward-rogers"
 
   if ((!is.matrix(object$apVar)) & (!force_mode)) {
     warning(
@@ -133,6 +133,8 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
       object$dims$p - length(unlist(object$modelStruct)))
     dfargs <- list(df = df)
     dffun <- function(k, dfargs) dfargs$df
+  } else {
+    stop("DF mode = ", mode, " is not supported!")
   }
 
   # return result
