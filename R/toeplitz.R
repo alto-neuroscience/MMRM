@@ -26,8 +26,8 @@ corToep = function(value = numeric(0), form = ~1, fixed = FALSE) {
 
 #' @importFrom nlme corMatrix
 #' @export
-corMatrix.corToep = function(object, covariate=getCovariate(object), corr = TRUE, ...) {
-  corD <- Dim(object, if (is.list(covariate)) {
+corMatrix.corToep = function(object, covariate=nlme::getCovariate(object), corr = TRUE, ...) {
+  corD <- nlme::Dim(object, if (is.list(covariate)) {
     if (is.null(names(covariate)))
       names(covariate) <- seq_along(covariate)
     rep(names(covariate), lengths(covariate))
@@ -103,17 +103,18 @@ Initialize.corToep <- function (object, data, ...) {
     stop("covariate must have unique values within groups for \"corToep\" objects")
   }
   covar <- unlist(covar) - 1
-  if (Dim(object)[["M"]] > 1) {
+  if (nlme::Dim(object)[["M"]] > 1) {
     attr(object, "covariate") <- split(covar, nlme::getGroups(object))
   }
   else {
     attr(object, "covariate") <- covar
   }
+  attr(object, "maxCov") <- length(unique(covar))
 
   params = as.vector(object)
   if (length(params) == 0) {
     oldAttr <- attributes(object)
-    object <- double(attr(object, "Dim")$maxLen - 1)
+    object <- double(attr(object, "maxCov") - 1)
     attributes(object) <- oldAttr
     attr(object, "factor") <- corFactor(object)
     attr(object, "logDet") <- -attr(attr(object, "factor"),
