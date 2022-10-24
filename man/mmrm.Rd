@@ -9,7 +9,8 @@ mmrm(
   time,
   subjects,
   data,
-  cov_struct = c("unstructured", "autoregressive", "compound-symmetry"),
+  heterogenous = TRUE,
+  cov_struct = c("unstructured", "toeplitz", "autoregressive", "compound-symmetry"),
   method = "REML",
   na.action = na.exclude,
   control = list(),
@@ -27,6 +28,11 @@ mmrm(
 \item{subjects}{the variable indicating unique subjects}
 
 \item{data}{the data structure}
+
+\item{heterogenous}{boolean flag for heterogenous vs. homogenous variance.
+If heterogenous = TRUE, uses different variance parameters
+at each time point. If heterogenous = FALSE,
+one variance paramter across all time points.}
 
 \item{cov_struct}{a sequence of covariance matrix specifications;
 will fit a model starting with the first covariance
@@ -89,7 +95,7 @@ The MMRM implemented here is defined as:
 }
 
 This implementation of the MMRM supports three different
-covariance structures: unstructured, AR(1), and compound symmetry.
+covariance structures: unstructured, toeplitz, AR(1), and compound symmetry.
 Timepoints are always treated as categorical,
 with independent residual variance at each timepoint and correlated residuals
 among individual subjects across timepoints.

@@ -15,7 +15,7 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
                              "satterthwaite", "appx-satterthwaite", "boot-satterthwaite",
                              "asymptotic"
                            ),
-                           extra.iter = 0, options, misc, information = "expected",
+                           extra.iter = 0, options, misc, information = "observed",
                            pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"),
                            force_mode = FALSE,
                            ...) {
@@ -43,7 +43,7 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
   mode <- match.arg(mode)
   if (mode == "boot-satterthwaite") mode <- "appx-satterthwaite"
   if (!is.null(options$df)) mode <- "df.error"
-  if (mode == "auto") mode <- "kenward"
+  if (mode == "auto") mode <- "kenward-rogers"
 
   if ((!is.matrix(object$apVar)) & (!force_mode)) {
     warning(
