@@ -133,6 +133,8 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
       object$dims$p - length(unlist(object$modelStruct)))
     dfargs <- list(df = df)
     dffun <- function(k, dfargs) dfargs$df
+  } else {
+    stop("DF mode = ", mode, " is not supported!")
   }
 
   # return result
