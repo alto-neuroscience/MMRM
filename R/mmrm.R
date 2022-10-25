@@ -82,12 +82,13 @@ mmrm <- function(formula,
                  time,
                  subjects,
                  data,
-                 heterogenous=TRUE,
+                 heterogenous = TRUE,
                  cov_struct = c(
                    "unstructured",
                    "toeplitz",
                    "autoregressive",
-                   "compound-symmetry"
+                   "compound-symmetry",
+                   "identity"
                  ),
                  method = "REML",
                  na.action = na.exclude,
@@ -115,10 +116,12 @@ mmrm <- function(formula,
     warning("time variable is not a factor, coercing it to factor")
   }
 
-  vcov_list = .get_vcov_list(heterogenous, cov_struct)
+  vcov_list <- .get_vcov_list(heterogenous, cov_struct)
   correlation_formula <- stats::as.formula(paste0("~ as.numeric(", time, ") | ", subjects))
-  weights_formula <- c(stats::as.formula(~ 1),
-                       stats::as.formula(paste0("~ 1 | ", time)))
+  weights_formula <- c(
+    stats::as.formula(~1),
+    stats::as.formula(paste0("~ 1 | ", time))
+  )
 
   res_list <- list()
   for (i in 1:length(vcov_list)) {
@@ -155,7 +158,7 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(vcov_list[[i]])[2], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(vcov_list[[i]])[2])
-      res$data <- model.frame(update(formula, paste("~ . +", subjects)), data=data, na.action=na.action)
+      res$data <- model.frame(update(formula, paste("~ . +", subjects)), data = data, na.action = na.action)
       res$time <- time
       res$subjects <- subjects
       res$heterogenous <- vcov_list[[i]][[1]]
@@ -189,9 +192,9 @@ mmrm <- function(formula,
 
 .check_mmrm_args <- function(formula, time, subjects, data) {
   if (missing(formula) ||
-      missing(time) ||
-      missing(subjects) ||
-      missing(data)) {
+    missing(time) ||
+    missing(subjects) ||
+    missing(data)) {
     stop(
       "missing argument! ",
       "The following arguments must be specified: ",
@@ -238,14 +241,14 @@ COV_TYPES <- c(
   "unstructured",
   "toeplitz",
   "autoregressive",
-  "compound-symmetry"
+  "compound-symmetry",
+  "identity"
 )
 
 #' @importFrom foreach %do%
-.get_vcov_list <- function(heterogenous, cov_struct=COV_TYPES) {
-
-  hlen = length(heterogenous)
-  clen = length(cov_struct)
+.get_vcov_list <- function(heterogenous, cov_struct = COV_TYPES) {
+  hlen <- length(heterogenous)
+  clen <- length(cov_struct)
   if (hlen > 1) {
     if (clen > 1) {
       if (clen != hlen) {
@@ -255,34 +258,37 @@ COV_TYPES <- c(
         )
       }
     } else {
-      cov_struct = rep(cov_struct, hlen)
+      cov_struct <- rep(cov_struct, hlen)
     }
   } else if (clen > 1) {
-    heterogenous = rep(heterogenous, clen)
+    heterogenous <- rep(heterogenous, clen)
   }
 
   foreach::foreach(i = 1:length(heterogenous)) %do% {
-    res = list()
-    res[["heterogenous"]] = heterogenous[i]
-    res[[cov_struct[i]]] = .cov_map(cov_struct[i])
+    res <- list()
+    res[["heterogenous"]] <- heterogenous[i]
+    res[[cov_struct[i]]] <- .cov_map(cov_struct[i])
     res
   }
 }
 
-.cov_map <- function(cov_type=COV_TYPES) {
-  cov_type = match.arg(cov_type)
+.cov_map <- function(cov_type = COV_TYPES) {
+  cov_type <- match.arg(cov_type)
   switch(cov_type,
-         "unstructured" = nlme::corSymm,
-         "toeplitz" = corToep,
-         "autoregressive" = nlme::corAR1,
-         "compound-symmetry" = nlme::corCompSymm,
+    "unstructured" = nlme::corSymm,
+    "toeplitz" = corToep,
+    "autoregressive" = nlme::corAR1,
+    "compound-symmetry" = nlme::corCompSymm,
+    "identity" = nlme::corIdent
   )
 }
 
 .get_cov_call <- function(cov_struct) {
   switch(cov_struct,
-         "unstructured" = quote(nlme::corSymm()),
-         "autoregressive" = quote(nlme::corAR1()),
-         "compound-symmetry" = quote(nlme::corCompSymm())
+    "unstructured" = quote(nlme::corSymm()),
+    "toeplitz" = quote(corToep()),
+    "autoregressive" = quote(nlme::corAR1()),
+    "compound-symmetry" = quote(nlme::corCompSymm()),
+    "identity" = quote(nlme::corIdent())
   )
 }
