@@ -20,7 +20,7 @@ are correlated across timepoints."><!-- mathjax --><script src="https://cdnjs.cl
     
     <a class="navbar-brand me-2" href="../index.html">MMRM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,7 +68,9 @@ are correlated across timepoints.</p>
 <span>  <span class="va">time</span>,</span>
 <span>  <span class="va">subjects</span>,</span>
 <span>  <span class="va">data</span>,</span>
-<span>  cov_struct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"unstructured"</span>, <span class="st">"autoregressive"</span>, <span class="st">"compound-symmetry"</span><span class="op">)</span>,</span>
+<span>  heterogenous <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  cov_struct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"unstructured"</span>, <span class="st">"toeplitz"</span>, <span class="st">"autoregressive"</span>, <span class="st">"compound-symmetry"</span>,</span>
+<span>    <span class="st">"identity"</span><span class="op">)</span>,</span>
 <span>  method <span class="op">=</span> <span class="st">"REML"</span>,</span>
 <span>  na.action <span class="op">=</span> <span class="va">na.exclude</span>,</span>
 <span>  control <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -95,6 +97,13 @@ are correlated across timepoints.</p>
 
 <dt>data</dt>
 <dd><p>the data structure</p></dd>
+
+
+<dt>heterogenous</dt>
+<dd><p>boolean flag for heterogenous vs. homogenous variance.
+If heterogenous = TRUE, uses different variance parameters
+at each time point. If heterogenous = FALSE,
+one variance paramter across all time points.</p></dd>
 
 
 <dt>cov_struct</dt>
@@ -168,7 +177,7 @@ $$\epsilon_i \sim \mathcal{N}(0, \Sigma_i)$$</p><ul><li><p>\(Y_i\) as the vector
 <li><p>\(\epsilon_i\) as the vector of residuals</p></li>
 <li><p>\(\Sigma_i\) as the (\(n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}\)) covariance matrix</p></li>
 </ul><p>This implementation of the MMRM supports three different
-covariance structures: unstructured, AR(1), and compound symmetry.
+covariance structures: unstructured, toeplitz, AR(1), and compound symmetry.
 Timepoints are always treated as categorical,
 with independent residual variance at each timepoint and correlated residuals
 among individual subjects across timepoints.</p>
