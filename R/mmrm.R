@@ -12,6 +12,10 @@
 #' @param time the time variable of the model
 #' @param subjects the variable indicating unique subjects
 #' @param data the data structure
+#' @param heterogenous boolean flag for heterogenous vs. homogenous variance.
+#'                       If heterogenous = TRUE, uses different variance parameters
+#'                       at each time point. If heterogenous = FALSE,
+#'                       one variance paramter across all time points.
 #' @param cov_struct a sequence of covariance matrix specifications;
 #'                       will fit a model starting with the first covariance
 #'                       and check for convergence. If there are convergence
@@ -50,7 +54,7 @@
 #' * \eqn{\Sigma_i} as the (\eqn{n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}}) covariance matrix
 #'
 #' This implementation of the MMRM supports three different
-#' covariance structures: unstructured, AR(1), and compound symmetry.
+#' covariance structures: unstructured, toeplitz, AR(1), and compound symmetry.
 #' Timepoints are always treated as categorical,
 #' with independent residual variance at each timepoint and correlated residuals
 #' among individual subjects across timepoints.
@@ -78,10 +82,13 @@ mmrm <- function(formula,
                  time,
                  subjects,
                  data,
+                 heterogenous = TRUE,
                  cov_struct = c(
                    "unstructured",
+                   "toeplitz",
                    "autoregressive",
-                   "compound-symmetry"
+                   "compound-symmetry",
+                   "identity"
                  ),
                  method = "REML",
                  na.action = na.exclude,
@@ -109,12 +116,15 @@ mmrm <- function(formula,
     warning("time variable is not a factor, coercing it to factor")
   }
 
-  cov_list <- .get_cov_list(cov_struct)
+  vcov_list <- .get_vcov_list(heterogenous, cov_struct)
   correlation_formula <- stats::as.formula(paste0("~ as.numeric(", time, ") | ", subjects))
-  weights_formula <- stats::as.formula(paste0("~ 1 | ", time))
+  weights_formula <- c(
+    stats::as.formula(~1),
+    stats::as.formula(paste0("~ 1 | ", time))
+  )
 
   res_list <- list()
-  for (i in 1:length(cov_list)) {
+  for (i in 1:length(vcov_list)) {
 
     # It looks like information regarding model fit/convergence
     # is not returned with the glsObject.
@@ -127,8 +137,8 @@ mmrm <- function(formula,
               nlme::gls(
                 .(formula),
                 data = data,
-                correlation = .(cov_list[[i]])(form = .(correlation_formula)),
-                weights = nlme::varIdent(form = .(weights_formula)),
+                correlation = .(vcov_list[[i]][[2]])(form = .(correlation_formula)),
+                weights = nlme::varIdent(form = .(weights_formula[[as.integer(vcov_list[[i]][[1]]) + 1]])),
                 method = .(method),
                 na.action = .(na.action),
                 control = .(control),
@@ -145,12 +155,13 @@ mmrm <- function(formula,
       error = function(e) e
     )
     if (inherits(res, "error")) {
-      warning("Error fitting MMRM with covariance structure = ", names(cov_list)[i], ": ", res$message)
+      warning("Error fitting MMRM with covariance structure = ", names(vcov_list[[i]])[2], ": ", res$message)
     } else {
-      res$call$correlation[1] <- .get_cov_call(names(cov_list)[i])
-      res$data <- na.action(subset(data, select = c(names(attr(res$terms, "dataClasses")), subjects)))
+      res$call$correlation[1] <- .get_cov_call(names(vcov_list[[i]])[2])
+      res$data <- model.frame(update(formula, paste("~ . +", subjects)), data = data, na.action = na.action)
       res$time <- time
       res$subjects <- subjects
+      res$heterogenous <- vcov_list[[i]][[1]]
 
       if (exists("wenv", mode = "environment")) {
         if (exists("warning_log", envir = wenv)) {
@@ -163,7 +174,7 @@ mmrm <- function(formula,
       }
       class(res) <- c("mmrm", class(res))
 
-      res_list[[names(cov_list)[i]]] <- res
+      res_list[[names(vcov_list[[i]])[2]]] <- res
       class(res_list) <- c("mmrmList", class(res))
 
       if (is.na(res$warnings) && stop_on_convergence) break
@@ -228,31 +239,56 @@ mmrm <- function(formula,
 
 COV_TYPES <- c(
   "unstructured",
+  "toeplitz",
   "autoregressive",
-  "compound-symmetry"
+  "compound-symmetry",
+  "identity"
 )
-.get_cov_list <- function(cov_struct = COV_TYPES) {
-  cov_list <- list()
-  for (c in cov_struct) {
-    ctype <- match.arg(tolower(c), COV_TYPES)
-    cov_list[[ctype]] <- .cov_map(ctype)
+
+#' @importFrom foreach %do%
+.get_vcov_list <- function(heterogenous, cov_struct = COV_TYPES) {
+  hlen <- length(heterogenous)
+  clen <- length(cov_struct)
+  if (hlen > 1) {
+    if (clen > 1) {
+      if (clen != hlen) {
+        stop(
+          "heterogenous and cov_struct have different lengths. ",
+          "Must be the same length or at least one argument must be length 1."
+        )
+      }
+    } else {
+      cov_struct <- rep(cov_struct, hlen)
+    }
+  } else if (clen > 1) {
+    heterogenous <- rep(heterogenous, clen)
   }
 
-  return(cov_list)
+  foreach::foreach(i = 1:length(heterogenous)) %do% {
+    res <- list()
+    res[["heterogenous"]] <- heterogenous[i]
+    res[[cov_struct[i]]] <- .cov_map(cov_struct[i])
+    res
+  }
 }
 
-.cov_map <- function(cov_type) {
+.cov_map <- function(cov_type = COV_TYPES) {
+  cov_type <- match.arg(cov_type)
   switch(cov_type,
     "unstructured" = nlme::corSymm,
+    "toeplitz" = corToep,
     "autoregressive" = nlme::corAR1,
     "compound-symmetry" = nlme::corCompSymm,
+    "identity" = nlme::corIdent
   )
 }
 
 .get_cov_call <- function(cov_struct) {
   switch(cov_struct,
     "unstructured" = quote(nlme::corSymm()),
+    "toeplitz" = quote(corToep()),
     "autoregressive" = quote(nlme::corAR1()),
-    "compound-symmetry" = quote(nlme::corCompSymm())
+    "compound-symmetry" = quote(nlme::corCompSymm()),
+    "identity" = quote(nlme::corIdent())
   )
 }

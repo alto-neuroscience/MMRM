@@ -18,7 +18,7 @@ compare_mmrm_lmer <- function(d) {
     data = d
   )
 
-  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time, mode = "kenward")
+  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time, mode = "kenward", information = "expected")
   m_eff <- mmrm_eff_size(m, m_emm)
 
   l <- suppressMessages(suppressWarnings(

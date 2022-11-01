@@ -6,10 +6,11 @@
   if (requireNamespace("emmeans", quietly = TRUE)) {
     emmeans::.emm_register("mmrm", pkgname)
   }
-  register_s3_method("nlme", "VarCorr", "mmrm")
-  register_s3_method("lme4", "getME", "mmrm")
   register_s3_method("pbkrtest", "vcovAdj", "mmrm")
-  register_s3_method("pbkrtest", "get_SigmaG", "mmrm")
+  register_s3_method("nlme", "corMatrix", "corToep")
+  register_s3_method("nlme", "corFactor", "corToep")
+  register_s3_method("nlme", "Initialize", "corToep")
+  register_s3_method("base", "coef", "corToep")
 }
 
 register_s3_method <- function(pkg, generic, class, envir = parent.frame()) {

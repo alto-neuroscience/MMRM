@@ -15,7 +15,7 @@ emm_basis.mmrm <- function(object, trms, xlev, grid, mode = c(
                              "satterthwaite", "appx-satterthwaite", "boot-satterthwaite",
                              "asymptotic"
                            ),
-                           extra.iter = 0, options, misc, information = "expected",
+                           extra.iter = 0, options, misc, information = "observed",
                            pbkrtest.limit = emmeans::get_emm_option("pbkrtest.limit"),
                            force_mode = FALSE,
                            ...) {

@@ -4,7 +4,7 @@
 #' Calculate timepoint by timepoint effect size for MMRM models as the
 #' least-squares means / sqrt(residual variance) at each timepoint.
 #' Calculated by running [emmeans::eff_size] for each timepoint contrast,
-#' where the timepoint by timepoint residuals come from the diagonals of [varcov].
+#' where the timepoint by timepoint residuals come from the diagonals of [covMat].
 #' Uncertainty is estimated by [emmeans::eff_size].
 #'
 #' @param mmrm_model the mmrm model(s) of type `mmrm`, `mmrmList`, or `mmrmCV`
@@ -32,8 +32,7 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
     stop("MMRM estimated marginal means object must include contrasts!")
   }
 
-
-  res_var <- diag(varcov(mmrm_model))
+  res_var <- diag(covMat(mmrm_model))
   dfs <- if (is.null(edf)) as.data.frame(mmrm_emm$contrasts)[, "df"] else rep(edf, length(res_var))
 
   efs_all <- suppressMessages(emmeans::eff_size(mmrm_emm,

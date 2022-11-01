@@ -27,6 +27,6 @@ contrast individually. The contrast covariance matrix only includes the diagonal
 Calculate timepoint by timepoint effect size for MMRM models as the
 least-squares means / sqrt(residual variance) at each timepoint.
 Calculated by running \link[emmeans:eff_size]{emmeans::eff_size} for each timepoint contrast,
-where the timepoint by timepoint residuals come from the diagonals of \link{varcov}.
+where the timepoint by timepoint residuals come from the diagonals of \link{covMat}.
 Uncertainty is estimated by \link[emmeans:eff_size]{emmeans::eff_size}.
 }
