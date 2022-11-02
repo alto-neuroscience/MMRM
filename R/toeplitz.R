@@ -37,24 +37,49 @@ corMatrix.corToep <- function(object, covariate = nlme::getCovariate(object), co
   })
 
   raw_params <- as.vector(object)
-  params <- (exp(raw_params) - 1) / (1 + exp(raw_params))
-  toep_mat <- toeplitz(c(1, params))
+  params <- sign(raw_params) * (exp(raw_params) - 1) / (1 + exp(raw_params))
+
+  fac_inv_mat = matrix(0, nrow=length(params)+1, ncol=length(params)+1)
+  fac_inv_mat[, 1] = c(1, params)
+  for (rr in 2:nrow(fac_inv_mat)) {
+    for (cc in 2:rr) {
+      if (rr == cc) {
+        fac_inv_mat[rr, cc] = sqrt(1 - sum(fac_inv_mat[rr, 1:(rr-1)]^2))
+      } else {
+        fac_inv_mat[rr, cc] = (
+          fac_inv_mat[rr-cc+1, 1] -
+            sum(fac_inv_mat[rr, 1:(cc-1)] * fac_inv_mat[cc, 1:(cc-1)])
+        ) / fac_inv_mat[cc, cc]
+      }
+    }
+  }
+
+  toep_mat = fac_inv_mat %*% t(fac_inv_mat)
+  fac_mat = solve(fac_inv_mat)
   all_covs <- sort(unique(unlist(covariate)))
   if (is.list(covariate)) {
     toep_list <- list()
     for (i in 1:length(covariate)) {
       this_covs <- sapply(all_covs, function(x) x %in% covariate[[i]])
-      toep_list[[i]] <- toep_mat[this_covs, this_covs]
-      if (!corr) toep_list[[i]] <- solve(t(chol(toep_list[[i]])))
+      if (corr) {
+        toep_list[[i]] <- toep_mat[this_covs, this_covs]
+      } else {
+        toep_list[[i]] = fac_mat[this_covs, this_covs]
+      }
     }
-    lD <- if (corr) NULL else sum(log(sapply(toep_list, det)))
+    lD <- if (corr) NULL else sum(log(sapply(toep_list, function(x) {
+      if (inherits(x, "matrix")) det(x) else 1
+    })))
     val <- toep_list
   } else {
     this_covs <- sapply(all_covs, function(x) x %in% covariate)
-    toep_mat <- toep_mat[this_covs, this_covs]
-    if (!corr) toep_mat <- solve(t(chol(toep_mat)))
-    lD <- if (corr) NULL else log(det(toep_mat))
-    val <- toep_mat
+    if (corr) {
+      val <- toep_mat[this_covs, this_covs]
+    } else {
+      val <- fac_mat[this_covs, this_covs]
+    }
+
+    lD <- if (corr) NULL else try(log(det(val)))
   }
 
   if (corD[["M"]] > 1) {
