@@ -165,7 +165,7 @@ mmrm <- function(formula,
 
       if (exists("wenv", mode = "environment")) {
         if (exists("warning_log", envir = wenv)) {
-          res$warnings <- warning_log
+          res$warnings <- wenv$warning_log
         }
         rm(wenv, envir = .GlobalEnv)
       }
