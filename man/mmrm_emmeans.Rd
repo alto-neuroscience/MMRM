@@ -4,7 +4,29 @@
 \alias{mmrm_emmeans}
 \title{Estimated Marignal Means of MMRM models}
 \usage{
-mmrm_emmeans(obj, ...)
+mmrm_emmeans(
+  obj,
+  specs = NULL,
+  group = NULL,
+  cov.reduce = FALSE,
+  nesting = NULL,
+  ...
+)
+}
+\arguments{
+\item{obj}{a fitted MMRM model}
+
+\item{specs}{A character vector specifying the names of the predictors over
+which EMMs are desired. See \link[emmeans:emmeans]{emmeans::emmeans} for more details.
+If omitted, group must be specified, and emmeans and
+contrasts will be calculated across groups at each time point.}
+
+\item{group}{the group over which to calculate emmeans and contrasts.
+If specs is not specified, group must be specified.}
+
+\item{cov.reduce}{logical indicating whether to average over a continuous
+variable (usually time points) when calculating
+emmeans and contrasts. By default, FALSE}
 }
 \value{
 see \link[emmeans:emmeans]{emmeans::emmeans}

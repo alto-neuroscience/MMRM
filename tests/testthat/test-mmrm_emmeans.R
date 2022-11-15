@@ -18,7 +18,7 @@ compare_mmrm_lmer <- function(d) {
     data = d
   )
 
-  m_emm <- mmrm_emmeans(m, pairwise ~ arm | time, mode = "kenward", information = "expected")
+  m_emm <- mmrm_emmeans(m, group="arm", mode = "kenward", information = "expected")
   m_eff <- mmrm_eff_size(m, m_emm)
 
   l <- suppressMessages(suppressWarnings(
@@ -43,7 +43,7 @@ compare_mmrm_lmer <- function(d) {
   }
   tol <- if (isSingular(l)) 1e-1 else 1e-3
   if (("corSymm" %in% attr(m$modelStruct$corStruct, "class")) & (is.matrix(m$apVar))) {
-    expect_equal(data.frame(m_emm), data.frame(l_emm), tolerance = tol)
+    expect_equal(data.frame(m_emm$contrasts), data.frame(l_emm$contrasts), tolerance = tol)
   }
 }
 
