@@ -160,13 +160,17 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(vcov_list[[i]])[2], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(vcov_list[[i]])[2])
-      res$data <- model.frame(update(formula,
-                                     paste("~ .",
-                                           subjects,
-                                           paste0(time, "_num"),
-                                           sep=" + ")),
-                              data = data,
-                              na.action = na.action)
+      res$data <- na.action(
+        get_all_vars(
+          update(
+            formula,
+            paste("~ .",
+                  subjects,
+                  paste0(time, "_num"),
+                  sep=" + ")
+          ), data = data
+        )
+      )
       res$time <- time
       res$subjects <- subjects
       res$heterogenous <- vcov_list[[i]][[1]]
