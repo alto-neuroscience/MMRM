@@ -9,6 +9,7 @@ mmrm(
   time,
   subjects,
   data,
+  categorical_time = TRUE,
   heterogenous = TRUE,
   cov_struct = c("unstructured", "toeplitz", "autoregressive", "compound-symmetry",
     "identity"),
@@ -29,6 +30,10 @@ mmrm(
 \item{subjects}{the variable indicating unique subjects}
 
 \item{data}{the data structure}
+
+\item{categorical_time}{logical indicating whether time should be a
+categorical (factor) or continuous (numeric)
+variable}
 
 \item{heterogenous}{boolean flag for heterogenous vs. homogenous variance.
 If heterogenous = TRUE, uses different variance parameters
@@ -77,9 +82,7 @@ If return_all = TRUE, returns list of all attempted models.
 Fits a Mixed Model Repeated Measures model (see Details).
 In this implementation, the fixed effects structure is flexible --
 it is user defined using a formula. This implementation does not support
-the inculsion of random effects, and it specifies that the residual variance
-at each time point is independent and residuals of individual subjects
-are correlated across timepoints.
+the inclusion of random effects.
 }
 \details{
 The MMRM implemented here is defined as:
@@ -95,11 +98,8 @@ The MMRM implemented here is defined as:
 \item \eqn{\Sigma_i} as the (\eqn{n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}}) covariance matrix
 }
 
-This implementation of the MMRM supports three different
+This implementation of the MMRM supports four different
 covariance structures: unstructured, toeplitz, AR(1), and compound symmetry.
-Timepoints are always treated as categorical,
-with independent residual variance at each timepoint and correlated residuals
-among individual subjects across timepoints.
 }
 \examples{
 \dontrun{

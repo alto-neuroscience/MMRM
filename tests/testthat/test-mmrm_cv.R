@@ -21,7 +21,7 @@ test_that(
           data = test_data,
           k = 3
         )
-        emms <- mmrm_emmeans(models, specs = pairwise ~ arm | time)
+        emms <- mmrm_emmeans(models, pairwise ~ arm | time)
         effs <- mmrm_eff_size(models, emms)
       },
       NA

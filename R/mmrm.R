@@ -4,14 +4,15 @@
 #' Fits a Mixed Model Repeated Measures model (see Details).
 #' In this implementation, the fixed effects structure is flexible --
 #' it is user defined using a formula. This implementation does not support
-#' the inculsion of random effects, and it specifies that the residual variance
-#' at each time point is independent and residuals of individual subjects
-#' are correlated across timepoints.
+#' the inclusion of random effects.
 #'
 #' @param formula formula for the fixed effects structure of the model
 #' @param time the time variable of the model
 #' @param subjects the variable indicating unique subjects
 #' @param data the data structure
+#' @param categorical_time logical indicating whether time should be a
+#'                           categorical (factor) or continuous (numeric)
+#'                           variable
 #' @param heterogenous boolean flag for heterogenous vs. homogenous variance.
 #'                       If heterogenous = TRUE, uses different variance parameters
 #'                       at each time point. If heterogenous = FALSE,
@@ -53,11 +54,9 @@
 #' * \eqn{\epsilon_i} as the vector of residuals
 #' * \eqn{\Sigma_i} as the (\eqn{n_{subjects}*n_{timepoints} x n_{subjects}*(n_{timepoints}}) covariance matrix
 #'
-#' This implementation of the MMRM supports three different
+#' This implementation of the MMRM supports four different
 #' covariance structures: unstructured, toeplitz, AR(1), and compound symmetry.
-#' Timepoints are always treated as categorical,
-#' with independent residual variance at each timepoint and correlated residuals
-#' among individual subjects across timepoints.
+#'
 #'
 #' @returns
 #' `mmrmObject` or `mmrmList`, a list of `mmrmObjects`
@@ -82,6 +81,7 @@ mmrm <- function(formula,
                  time,
                  subjects,
                  data,
+                 categorical_time = TRUE,
                  heterogenous = TRUE,
                  cov_struct = c(
                    "unstructured",
@@ -109,15 +109,17 @@ mmrm <- function(formula,
     )
   }
 
-
-  # ensure that time variable is a factor
-  if (class(data[[time]]) != "factor") {
-    data[[time]] <- factor(data[[time]])
-    warning("time variable is not a factor, coercing it to factor")
+  if (categorical_time) {
+    data[[time]] = factor(data[[time]])
+    data[[paste0(time, "_num")]] = as.numeric(data[[time]])
+  } else {
+    time_factor = factor(data[[time]])
+    data[[time]] = as.numeric(levels(time_factor)[time_factor])
+    data[[paste0(time, "_num")]] = as.numeric(time_factor)
   }
 
   vcov_list <- .get_vcov_list(heterogenous, cov_struct)
-  correlation_formula <- stats::as.formula(paste0("~ as.numeric(", time, ") | ", subjects))
+  correlation_formula <- stats::as.formula(paste0("~ ", time, "_num | ", subjects))
   weights_formula <- c(
     stats::as.formula(~1),
     stats::as.formula(paste0("~ 1 | ", time))
@@ -158,7 +160,13 @@ mmrm <- function(formula,
       warning("Error fitting MMRM with covariance structure = ", names(vcov_list[[i]])[2], ": ", res$message)
     } else {
       res$call$correlation[1] <- .get_cov_call(names(vcov_list[[i]])[2])
-      res$data <- model.frame(update(formula, paste("~ . +", subjects)), data = data, na.action = na.action)
+      res$data <- model.frame(update(formula,
+                                     paste("~ .",
+                                           subjects,
+                                           paste0(time, "_num"),
+                                           sep=" + ")),
+                              data = data,
+                              na.action = na.action)
       res$time <- time
       res$subjects <- subjects
       res$heterogenous <- vcov_list[[i]][[1]]
@@ -192,9 +200,9 @@ mmrm <- function(formula,
 
 .check_mmrm_args <- function(formula, time, subjects, data) {
   if (missing(formula) ||
-    missing(time) ||
-    missing(subjects) ||
-    missing(data)) {
+      missing(time) ||
+      missing(subjects) ||
+      missing(data)) {
     stop(
       "missing argument! ",
       "The following arguments must be specified: ",
@@ -275,20 +283,20 @@ COV_TYPES <- c(
 .cov_map <- function(cov_type = COV_TYPES) {
   cov_type <- match.arg(cov_type)
   switch(cov_type,
-    "unstructured" = nlme::corSymm,
-    "toeplitz" = corToep,
-    "autoregressive" = nlme::corAR1,
-    "compound-symmetry" = nlme::corCompSymm,
-    "identity" = nlme::corIdent
+         "unstructured" = nlme::corSymm,
+         "toeplitz" = corToep,
+         "autoregressive" = nlme::corAR1,
+         "compound-symmetry" = nlme::corCompSymm,
+         "identity" = nlme::corIdent
   )
 }
 
 .get_cov_call <- function(cov_struct) {
   switch(cov_struct,
-    "unstructured" = quote(nlme::corSymm()),
-    "toeplitz" = quote(corToep()),
-    "autoregressive" = quote(nlme::corAR1()),
-    "compound-symmetry" = quote(nlme::corCompSymm()),
-    "identity" = quote(nlme::corIdent())
+         "unstructured" = quote(nlme::corSymm()),
+         "toeplitz" = quote(corToep()),
+         "autoregressive" = quote(nlme::corAR1()),
+         "compound-symmetry" = quote(nlme::corCompSymm()),
+         "identity" = quote(nlme::corIdent())
   )
 }
