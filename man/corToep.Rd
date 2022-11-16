@@ -11,7 +11,7 @@ corToep(value = numeric(0), form = ~1, fixed = FALSE)
 Must have length number of levels - 1.}
 
 \item{form}{a one sided formula of the form ~ t, or ~ t | g,
-specifying a time covariate t and, optionally,
+specifying a time covariate and, optionally,
 a grouping factor g.}
 
 \item{fixed}{an optional logical value indicating whether the coefficients
