@@ -14,7 +14,7 @@ Please see emmeans::emmeans for further documentation."><!-- mathjax --><script 
     
     <a class="navbar-brand me-2" href="../index.html">MMRM</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,9 +54,40 @@ Please see <a href="https://rdrr.io/pkg/emmeans/man/emmeans.html" class="externa
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mmrm_emmeans</span><span class="op">(</span><span class="va">obj</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mmrm_emmeans</span><span class="op">(</span></span>
+<span>  <span class="va">obj</span>,</span>
+<span>  specs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  group <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cov.reduce <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  nesting <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
+    <dl><dt>obj</dt>
+<dd><p>a fitted MMRM model</p></dd>
+
+
+<dt>specs</dt>
+<dd><p>A character vector specifying the names of the predictors over
+which EMMs are desired. See <a href="https://rdrr.io/pkg/emmeans/man/emmeans.html" class="external-link">emmeans::emmeans</a> for more details.
+If omitted, group must be specified, and emmeans and
+contrasts will be calculated across groups at each time point.</p></dd>
+
+
+<dt>group</dt>
+<dd><p>the group over which to calculate emmeans and contrasts.
+If specs is not specified, group must be specified.</p></dd>
+
+
+<dt>cov.reduce</dt>
+<dd><p>logical indicating whether to average over a continuous
+variable (usually time points) when calculating
+emmeans and contrasts. By default, FALSE</p></dd>
+
+</dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     
