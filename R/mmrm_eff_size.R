@@ -35,6 +35,8 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
   res_var <- diag(covMat(mmrm_model))
   dfs <- if (is.null(edf)) as.data.frame(mmrm_emm$contrasts)[, "df"] else rep(edf, length(res_var))
 
+  lvls = factor(emm$contrasts@levels[[2]])
+
   efs_all <- suppressMessages(emmeans::eff_size(mmrm_emm,
     sigma = sqrt(res_var[1]),
     edf = dfs[1],
@@ -44,8 +46,9 @@ mmrm_eff_size.default <- function(mmrm_model, mmrm_emm, edf = NULL, ...) {
   efs_ind <- foreach::foreach(i = 1:nrow(mmrm_emm$contrasts@grid)) %do% {
     this_emm <- mmrm_emm
     this_emm$contrasts <- mmrm_emm$contrasts[i]
+    lvl_ind = which(levels(lvls) == this_emm$contrasts@levels[[2]])
     this_eff <- suppressMessages(emmeans::eff_size(this_emm,
-      sigma = sqrt(res_var[as.character(this_emm$contrasts@levels[[2]])]),
+      sigma = sqrt(res_var[lvl_ind]),
       edf = dfs[i]
     ))
     this_eff@levels <- this_emm$contrasts@levels
