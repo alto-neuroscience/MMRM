@@ -1,7 +1,7 @@
 Package: MMRM
 Type: Package
 Title: Mixed Model Repeated Measures Modelling 
-Version: 1.2.1
+Version: 1.2.2
 Authors@R: person("Gary", "Kane", email = "gkane@altoneuroscience.com",
   role = c("aut", "cre"))
 URL: https://github.com/alto-neuroscience/MMRM,
@@ -25,7 +25,7 @@ Imports:
     lme4,
     pbkrtest,
     MASS
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
 Roxygen: list(markdown = TRUE)
 Suggests:
     testthat (>= 3.0.0)

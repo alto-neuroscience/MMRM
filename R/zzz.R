@@ -11,6 +11,7 @@
   register_s3_method("nlme", "corFactor", "corToep")
   register_s3_method("nlme", "Initialize", "corToep")
   register_s3_method("base", "coef", "corToep")
+  emmeans::emm_options(rg.limit=50000)
 }
 
 register_s3_method <- function(pkg, generic, class, envir = parent.frame()) {
